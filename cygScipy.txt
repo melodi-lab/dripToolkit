@@ -1,0 +1,10 @@
+In the Cygwin setup (note, you can rerun setup to install/update additional packages), install:
+python-setuptools
+liblapack-devel
+gcc-fortran
+
+Restarting Cygwin, run:
+easy_install-2.7 https://github.com/scipy/scipy/archive/master.zip
+
+This may take some time to build.  To confirm scipy was built correctly, in python, type:
+import scipy

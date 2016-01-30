@@ -1,0 +1,630 @@
+<html>
+<head>
+<title>DRIP ToolKit Documentation</title>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-72240246-3', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+<link rel="stylesheet" href="drip.css" type="text/css">
+
+</head>
+
+<body>
+<blockquote>
+
+<div id="main">
+
+<h1>Installation Instructions</h1>
+<b>Note:</b> when typing the commands shown in these instructions
+do not type the
+leading <code>$</code> before each command; it indicates the
+prompt. These instructions will refer to your home directory as
+<code>$HOME</code>.  You can type <code>$HOME</code> in the commands
+or you can use the fully qualified path to your home directory which
+may be something like <code>/home/yourname/</code>.  Note that you can
+find out the location of your home directory by logging in and
+typing <code>pwd</code> or <code>echo $HOME</code>.
+
+<p/>
+The DRIP ToolKit requires the following prerequisites:
+<ul>
+<li>
+<a href="https://www.cygwin.com/">Cygwin</a> (if using Windows)
+</li>
+
+<li>
+g++ compiler
+</li>
+
+<li>
+the <a href="https://melodi.ee.washington.edu/gmtk/">Graphical Models
+    ToolKit (GMTK)</a>
+</li>
+
+<li>
+Python 2.7
+</li>
+
+<li>
+argparse, numpy, scipy python packages (<a href="cygScipy.txt">Cygwin instructions to build scipy</a>)
+</li>
+
+<li>
+<!-- <a href="http://www.swig.org/download.html">SWIG</a>, version 2.0.0 or greater -->
+<a href="http://www.swig.org/download.html">SWIG</a>
+</li>
+
+<!-- <li> -->
+<!-- Autotools-dev -->
+<!-- </li> -->
+</ul>
+
+<p>Download and unzip the <a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP ToolKit</a>.  In the
+  unzipped directory, build the pFile package (necessary for creating
+  GMTK observation files in python) by running:
+<div class=code id="nav"><code>
+$ cd pyFiles/pfile <br>
+$ swig -c++ -python libpfile.i<br>
+$ CC=g++ python setup.py build_ext -i<br>
+</code>
+</div><br>
+If no error messages are output, the DRIP ToolKit is now ready for use!
+</p>
+
+<h1>Searching tandem mass spectra using DRIP</h1>
+<center>
+<img  src="dripSearchFlowchart.png" usemap="#commands-files" width="60%">
+</center>
+A search using the DRIP ToolKit
+requires the following steps (illustrated in the above flowchart):
+<ol>
+  <li>Digest the protein database FASTA file using dripDigest
+  (detailed <a href="documentation.html#dripDigest">here</a>)
+  <li>Search spectra using dripSearch
+  (detailed <a href="documentation.html#dripSearch">here</a>)
+</ol>
+
+The following are optional for a database search:
+<ul>
+  <li>For a low-resolution MS2 search and given a set of
+  high-confidence PSMs, DRIP model parameters may be trained prior to
+  the search using dripTrain.py
+  (detailed <a href="documentation.html#dripTrain">here</a>)
+  <li>Prepare data to be searched by dripSearch on a compute cluster
+  (detailed <a href="documentation.html#cluster">here</a>)
+  <li>Recalibrate DRIP PSMs by charge
+  (detailed <a href="documentation.html#recalibrate">here</a>)
+</ul>
+
+<!-- <h1>Training DRIP --
+  -- using <a href="dripTrain.html">dripTrain.py</a></h1> -->
+<a href="dripTrain"></a>
+<h2>Training DRIP using dripTrain</h2>
+<p/>Before a low-resolution MS2 search, and assuming a set of
+high-confidence training PSMs, DRIP may be trained using
+dripTrain.py.  The set of high-confidence PSMs must be in a
+tab-delimited format with
+fields <code>Peptide</code>, <code>Scan</code>,
+and <code>Charge</code> (<a href="sample.psm">sample PSM file
+  format</a>).  The MS2 spectra for these PSMs must also be supplied
+in <a href="ms2-format.html"><code>.ms2</code></a> file format.</p>
+
+<p/>In the unzipped DRIP ToolKit directory, the directory <code>riptideTrainingData</code> contains
+high-confidence PSMs (<code>strict-orbitrap-uniqueSids.psm</code>) and
+spectra (<code>strict-orbitrap-uniqueSids.ms2</code>).  We may utilize
+these files to train DRIP using
+
+<div class=code id="nav"><code>
+$ python dripTrain.py --psm-library 
+  riptideTrainingData/strict-orbitrap.psm \<br> --spectra
+  riptideTrainingData/strict-orbitrap.ms2</code><br>
+</div><br>
+Upon completion, the program will produce two
+files, <code>dripLearned.means</code>
+and <code>dripLearned.covars</code> containing the learned DRIP
+Gaussian means and covariances, respectively.  These parameters may
+then be utilized by dripSearch.  The output mean and covariance file
+names may also be set using<br>
+
+<br><div class=code id="nav"><code>
+$ python dripTrain.py --psm-library 
+  riptideTrainingData/strict-orbitrap.psm \<br> --spectra
+  riptideTrainingData/strict-orbitrap.ms2 \<br>
+--output-mean-file <em>&lt;mean file name&gt;</em> \<br>
+--output-covar-file <em>&lt;covariance file name&gt;</em>
+  </code>
+</div><br>
+Static modifications may similarly be passed to dripTrain, as
+specified <a href="dripTrain.html#aaMods">here</a>.
+</p>
+
+
+<!-- <h1>Digesting a FASTA file -->
+<!--   using <a href="dripDigest.html">dripDigest.py</a></h1> -->
+<a href="dripDigest"></a>
+<h2>Digesting a FASTA file using dripDigest</h2>
+<p/>Before searching an <code>.ms2</code> file, we must first digest the
+  protein database FASTA file using dripDigest.  DripDigest writes the
+  digested peptides to binary files in the local directory specified
+  by <code>--digest-dir</code>.  If recalibrating PSMs by charge, as
+  described in
+  Section <a href="documentation.html#recalibrate">Recalibrating PSMs
+  by charge</a>, <code>--recalibrate</code> must be set
+  to <code>True</code> (this creates a second set of decoy PSMs used
+  to recalibrate differently charged PSMs).</p>
+
+<p/>
+The FASTA file is passed specified using the
+flag <code>--fasta</code>.  If a set of decoy
+PSMs are desired to be searched and output, the
+flag <code>--decoys</code> must be set to true.  If it is desired that 
+the results of dripSearch be recalibrated, so that differently charged
+PSMs are comparable to one another, the
+flag <code>--recalibrate</code> must be set to true (in which case a
+second, disjoint set of decoys is created, searched, and used to
+perform the recalibration.  Static modifications, variable
+modifications, constraints on peptide lengths and masses, and many
+other settings may similarly be passed to dripTrain, as
+described <a href="dripTrain.html#aaMods">here</a>.  Let's look at an
+example digestion,
+
+<div class=code id="nav"><code>
+$ python dripDigest.py  \<br>
+--digest-dir dripDigest-output \<br>
+--fasta plasmo_Pfalciparum3D7_NCBI.fasta \<br>
+--min-length 7 \<br>
+--custom-enzyme '[K]|[X]' \<br>
+--mods-spec 'C+57.0214,K+229.16293' \<br>
+--nterm-peptide-mods-spec 'X+229.16293' \<br>
+--monoisotopic-precursor true \<br>
+--digestion full-digest \<br>
+--missed-cleavages 0 \<br>
+--decoys True \<br>
+--decoy-format shuffle \<br>
+--keep-terminal-aminos NC \<br>
+<!-- --recalibrate T \<br> -->
+--peptide-list true
+</code>
+</div>
+</p>
+
+<!-- <p/>In this example, the directory to write the digested peptide -->
+<!-- binary files is specified as <code>dripDigest-output</code> (this is -->
+<!-- the default value).  This same directory must specified to -->
+<!-- dripSearch.  We are digesting FASTA -->
+<!-- file <code>plasmo_Pfalciparum3D7_NCBI.fasta</code>, requiring valid -->
+<!-- digested peptides have minimum length 7, specifying a digesting enzyme -->
+<!-- where we cleave at every Lysine, defining static modifications of -->
+<!-- +57.0214 to Cysteine and +229.16293 to Lysine, defining an n-terminal -->
+<!-- static -->
+<!-- modification of +229.16293 to any amino acid, specifying that we'd -->
+<!-- like to calculate monoisotopic peptide masses, and specifying that -->
+<!-- we'd like to search decoys.  The -->
+<!-- table below summarizes the options we've discussed. -->
+<!-- </p> -->
+
+<table id="fileFormatsTable" border="1" width="50%">
+<!-- <table border="1" align="center" width="50%"> -->
+<!-- The following table describes the parameters passed into dripDigest. -->
+<!-- Remaining options, such as constraining the mass and length of valid -->
+<!-- digested peptides, specifying the maximum number of allowable variable -->
+<!-- modifications, and seed options for randomly permuting decoys are -->
+<!-- discussed on the <a href="dripDigest.html">dripDigest</a> --
+  -- page. -->
+The following table describes the parameters passed into dripDigest.
+All options are discussed at length in
+the <a href="dripDigest.html">dripDigest</a> page.
+<tr>
+<td>dripDigest Option</td>
+<td>Meaning</td>
+</tr>
+
+<tr>
+<td>--digest-dir dripDigest-output</td>
+<td>Specify the directory to write the digested peptide
+binary files as <code>dripDigest-output</code> (this is
+the default value).</td>
+</tr>
+
+<tr>
+<td>--fasta plasmo_Pfalciparum3D7_NCBI.fasta</td>
+<td>Digest FASTA
+file <code>plasmo_Pfalciparum3D7_NCBI.fasta</code>.  Program will
+  exit with an error if a FASTA file is not specified.</td>
+</tr>
+
+<tr>
+<td>--min-length 7</td>
+<td>Valid digested peptides must have minimum length 7.</td>
+</tr>
+
+<tr>
+<td>--custom-enzyme '[K]|[X]'</td>
+<td>Cleave at every Lysine irregardless of the following amino
+  acid (specifying other enzyme options, including custom enzymes and
+  standard enzymes such as trypsin, is discussed at
+  length <a href="dripDigest.html#enzymaticDigestion">here</a>)</td>.
+</tr>
+
+<tr>
+<td>--mods-spec 'C+57.0214,K+229.16293'</td>
+<td>Define static modifications of
++57.0214 to Cysteine and +229.16293 to Lysine.</td>
+</tr>
+
+<tr>
+<td>--nterm-peptide-mods-spec 'X+229.16293'</td>
+<td>Define an N-terminal
+static modification of +229.16293 to every amino acid.</td>
+</tr>
+
+<tr>
+<td>--monoisotopic-precursor true</td>
+<td>Calculate peptide monoisotopic masses.</td>
+</tr>
+
+<tr>
+<td>--digestion full-digest</td>
+<td>Every peptide must have two enzymatic termini.  Partial digests
+  (where peptides have only one enzymatic terminus) are also
+  supported.</td>
+</tr>
+
+<tr>
+<td>--missed-cleavages 0</td>
+<td>Allow no missed cleavages.</td>
+</tr>
+
+<tr>
+<td>--decoys True</td>
+<td>Create decoy database.  The set of decoys constructed is disjoint
+  from the original, target peptide database.</td>
+</tr>
+
+<tr>
+<td>--decoy-format shuffle</td>
+<td>Shuffle target peptides to create decoys.  Decoys may also be
+  created by reversing target peptides, specified
+  by <code>peptide-reverse</code></td>
+</tr>
+
+<tr>
+<td>--keep-terminal-aminos</td>
+<td>Keep the N-terminal and C-terminal amino acids of the target
+  peptide when creating a decoy.</td>
+</tr>
+
+<!-- <tr> -->
+<!-- <td>--recalibrate T</td> -->
+<!-- <td>Create second, disjoint set of decoy peptides to search and -->
+<!--   recalibrate PSMs by charge.</td> -->
+<!-- </tr> -->
+
+<tr>
+<td>--peptide-list true</td>
+<td>Write all digested peptides (target and decoys) and their masses
+  to ascii in output directory.</td>
+</tr>
+</table>
+
+<p/>DripDigest allows for variable modifications, partial digestions,
+and missed cleavages.  Such options may result in a significantly
+larger peptide database.  In order to deal with evaluating peptide
+databases outside the size which may fit in memory, dripDigest.py
+utilizes an out-of-core algorithm where only a subset of digested
+peptides is ever loaded into memory at a given time.
+</p>
+<!-- <h1>Searching spectra -->
+<!--   using <a href="dripSearch.html">dripSearch.py</a></h1> -->
+<a href="dripSearch"></a>
+<h2>Searching spectra using dripSearch</h2>
+<p>DripSearch operates in several <i>modes</i>.  To run in standalone
+mode (i.e., on a single machine), set <code>--cluster-mode False</code>.
+  A standalone search using DRIP is designed for multithreading on
+CPUs with multiple cores.  Different DRIP models are utilized when
+searching either low-resolution or high-resolution MS2 spectra.  For
+the former, the location of Gaussian centers used by DRIP to
+score fragment ion matches may be learned
+using <code>dripTrain</code>, and for the latter, the location of
+the Gaussian centers used by DRIP to score fragment ion matches is
+the exact b- and y-ion values (reflecting the improved machine
+accuracy).  Note that, in <code>dripDigest</code>,
+when <code>--recalibrate</code> is set to true, dripSearch automatically
+searches a secondary database of decoy peptides and recalibrates the
+output PSMs.</p>
+
+<p>Let's look at an example standalone DRIP search run.  Assume that
+  we've trained DRIP using the command
+  in "<a href="documentation.html#dripTrain">Training DRIP using
+  dripTrain</a>" and digested the FASTA file using the command
+  in "<a href="dripDigest">Digesting a FASTA file using
+  dripDigest</a>."  Given the dataset <code>plasmodium.ms2</code>, we
+  could perform a DRIP search using
+<div class=code id="nav"><code>
+$ python dripSearch.py \<br>
+--digest-dir dripDigest-output \<br>
+--precursor-window 3.0 \<br>
+--precursor-window-type Da \<br>
+--beam 0 \<br>
+--high-res-ms2 F \<br>
+--learned-means dripLearned.means \<br>
+--learned-covars dripLearned.covars \<br>
+--num-threads 8 \<br>
+--top-match 1 \<br>
+--charges all \<br>
+--spectra plasmodium.ms2 \<br>
+--output dripSearch-output
+</code>
+</div>
+</p>
+
+<table id="fileFormatsTable" border="1" width="50%">
+<tr>
+<td>dripSearch option</td>
+<td>Meaning</td>
+</tr>
+
+<tr>
+<td>--digest-dir dripDigest-output</td>
+<td>The output directory of <code>dripDigest</code> containing the
+  digested peptide databases in binary format.</td>
+</tr>
+
+<tr>
+<td>--precursor-window 3.0</td>
+<td>Precursor mass error tolerance (&plusmn)</td>
+</tr>
+
+<tr>
+<td>--precursor-window-type Da</td>
+<td>Specify units of precursor mass error tolerance
+  (daltons <code>Da</code> or parts-per-million <code>ppm</code>).</td>
+</tr>
+
+<tr>
+<td>--beam 0</td>
+<td>Beam pruning width to use during DRIP inference.
+  When <code>0</code>, no pruning takes place so that exact inference
+  is performed.  Setting this value to nonzero values, such
+  as <code>200</code> or <code>100</code>, may be used to speed up
+  search time, though small values will significantly degrade search
+  results (single digit values should be avoided at all costs).</td>
+</tr>
+
+<tr>
+<td>--high-res-ms2 F</td>
+<td>Run DRIP low-resolution MS2 model.</td>
+</tr>
+
+<tr>
+<td>--learned-means dripLearned.means</td>
+<td>Use previously learned DRIP means for low-resolution MS2
+  model.</td>
+</tr>
+
+<tr>
+<td>--learned-covars dripLearned.covars</td>
+<td>Use previously learned DRIP covariances for low-resolution MS2
+  model.</td>
+</tr>
+
+<tr>
+<td>--num-threads 8</td>
+<td>Use <code>8</code> CPU threads.  If the supplied value is larger
+  than the number of processor threads, value is set to the maximum
+  number of processor threads.</td>
+</tr>
+
+<tr>
+<td>--top-match 1</td>
+<td>Return the top PSM per spectrum.  When recalibration is not set
+  to true, the top PSMs per spectrum per charge are returned
+  (differently charged PSMs are ranked separately, as opposed to being
+  mixed and ranked together after recalibration).</td>
+</tr>
+
+<tr>
+<td>--charges all</td>
+<td>Search all spectrum charges.  Specific charges may be specified
+  by passing in a comma-delimited string signifying the charges to be
+  searched.  For instance, <code>--charges 1,3</code> searches all 
+  charge 1 and charge 3 spectra.
+</td>
+</tr>
+
+<tr>
+<td>--spectra plasmodium.ms2</td>
+<td>The MS2 dataset to search.</td>
+</tr>
+
+<tr>
+<td>--output dripSearch-output</td>
+<td>The base of the output file name.  The search results will appear
+  in the local directory in file <code>dripSearch-output.txt</code></td>
+</tr>
+</table>
+
+<p>All options are further described in detail on
+the <a href="dripSearch.html">dripSearch</a> page.</p>
+
+<!-- <h3><i>Standalone search</i></h3> -->
+<!-- <h4>Specifying low-resolution MS2 or high-resolution MS2 DRIP -->
+<!--   models</h4> -->
+<!-- <h4>Specifying CPU threads</h4> -->
+
+
+<a name="recalibrate"></a>
+<h4>Recalibrating PSMs by charge</h4>
+<p>In order to compare differently charged PSMs, the scoring
+distributions of which may differ wildly (since higher charged PSMs
+contain more theoretical peaks and thus, on average, have fewer
+insertions and deletions than their lower charged colleagues), we
+recalibrate the searched PSMs by charge so that differently charged
+PSMs are comparable to one another.</p>
+
+<p>We accomplish this by setting the <code>--recalibrate</code>
+in dripDigest to <code>True</code>.  DRIP search will then compare
+  differently charged PSMs and only return the top <code>N</code> PSMs
+  per spectrum, where <code>--top-match N</code>.
+</p>
+
+<a name="cluster"></a>
+<h3>Search using a compute cluster</h3>
+<p><b>Note:</b> if planning to perform a DRIP search over a dataset using
+a compute cluster, it is recommended to use the cluster functionality
+provided by dripSearch and to pass in the entire dataset of
+interest.  DripSearch considers all spectra to provide upper and lower
+bounds on the theoretical spectra of scored peptides.</p>
+
+<p><em>Setting the DRIP ToolKit environment variable for cluster use</em></p>
+<ul>
+<li>
+<p/>
+The default cluster configuration assumes an environment
+variable <code>$DRIPTOOLKIT</code> which points to the top-level
+directory housing the DRIP modules.  Assuming the top-level directory
+<em>&lt;directory&gt;</em>, in order to correctly submit cluster jobs using
+the DRIP ToolKit, please add the following to your bashrc file
+(remember to replace <em>&lt;directory&gt;</em> with the
+absolute path of the top-level directory housing the toolkit):
+
+<div class=code id="nav"><code>
+$ export DRIPTOOLKIT=&lt;directory&gt;</code>
+</div><br>
+
+You will have to log on again for the change to take effect.
+</ul>
+<!-- <center> -->
+<img  src="dripSearchClusterFlowchart.png" usemap="#commands-files" width="70%">
+<!-- </center> -->
+<p>The DRIP ToolKit was designed with cluster use in mind.
+  Evaluating a dataset over a cluster consists of three steps
+  (illustrated in the above flowchart):
+<ol>
+<h4><li>Splitting the data and generating cluster jobs</h4>
+<p>To split a dataset for cluster use,
+add <code>--num-cluster-jobs</code> to a typical call to 
+dripSearch.py.  For instance, returning to our earlier command
+line, we split the spectra and candidate peptides for
+dataset <code>plasmodium.ms2</code> into <code>100</code> cluster jobs
+by running</p>
+
+<div class=code id="nav"><code>
+$ python dripSearch.py \<br>
+--digest-dir dripDigest-output \<br>
+--precursor-window 3.0 \<br>
+--precursor-window-type Da \<br>
+--beam 0 \<br>
+--high-res-ms2 F \<br>
+--learned-means dripLearned.means \<br>
+--learned-covars dripLearned.covars \<br>
+--num-threads 8 \<br>
+--top-match 1 \<br>
+--charges all \<br>
+--spectra plasmodium.ms2 \<br>
+--output dripSearch-output \<br>
+--num-cluster-jobs 100
+</code>
+</div>
+
+<h4><li>Running jobs on a cluster and writing each job's results back
+  to the local directory</h4>
+<p>Due to the many different existing cluster environments, dripSearch
+  does not directly dispatch jobs to a compute cluster, but neatly
+  packages the necessary data for each cluster job and generates bash
+  scripts to be easily deployed to a cluster queue.  The data for each
+  cluster job will be written to the local
+  directory <code>encode</code> and a list of scripts which run each
+  individual job may be found in <code>encode/clusterJobs.txt</code>.
+  By default, cluster jobs will be run in <code>/tmp</code>, but this
+  may be changed by passing into dripSearch.py 
+<code>--cluster-dir <em>&lt;absolute path of 
+desired run directory&gt;</em></code>.  All results are written
+to the local directory <code>log</code>.</p>
+
+<p><em><h4>Customizing cluster job scripts</h4></em></p>
+<p>An example cluster script looks like the following:
+<div class=code id="nav"><code>
+#!/bin/bash<br>
+<br>
+TMPDIR=$(mktemp -d /tmp/drip.XXXXXXXXXX)<br>
+<br>
+cd $TMPDIR<br>
+<br>
+python -OO $DRIPTOOLKIT/dripSearch.py --cluster-mode True --spectra /homes/halloj3/dripSearch_ooc/encode/split0.pickle --output split0-ident<br>
+NAP=10<br>
+number=$RANDOM<br>
+while [ "$number" -gt $NAP -o "$number" -le 0 ]<br>
+do<br>
+number=$RANDOM<br>
+done<br>
+sleep $number<br>
+cp split0-ident.txt /homes/halloj3/dripSearch_ooc/log/split0-ident.txt<br>
+</code>
+</div><br>
+
+In the above script, we generate a random
+directory <code>TMPDIR</code> to run our job in, run dripSearch in
+cluster mode (<code>--cluster-mode True</code>), wait a random 
+amount of time (so as not to flood NFS), and copy the 
+results back to the local directory <code>log</code>.
+</p>
+
+<p>In order to fit varying cluster environments, the scripts
+  generated by dripSearch are easily customizable by
+  editing <code>pyFiles/cluster.py</code>.  For instance, instead of
+  running cluster jobs in /tmp, one could run on the scratch space of
+  a compute node by editing lines 13-15 of <code>cluster.py</code>
+  from
+<div class=code id="nav"><code>
+        print >> out, """#!/bin/bash<br>
+"""<br>
+        print >> out, "TMPDIR=$(mktemp -d %s)" % (os.path.join(tmpDir, 'drip.XXXXXXXXXX'))<br>
+</code>
+</div><br>
+
+to
+<div class=code id="nav"><code>
+    print >> out, """#!/bin/bash<br>
+if [ ! -d /s0/$USER ]<br>
+then<br>
+    space_req /s0<br>
+fi<br>
+"""
+    print >> out, "TMPDIR=$(mktemp -d %s)" % '/s0/$USER/drip.XXXXXXXXXX'
+</code>
+</div><br>
+where we assume each compute node has scratch space <code>/s0</code>.
+
+</p>
+
+<h4><li>Merging the results</h4>
+<p>Once all jobs have completed, all results will be written to local
+  directory <log>.  To merge all results using dripSearch, we run
+<div class=code id="nav"><code>
+python dripSearch.py --merge-cluster-results True \<br>
+--output dripSearch-output
+</code>
+</div><br>
+The output will then be written to <code>dripSearch-output.txt</code>
+</p>
+</ol>
+</p>
+
+</div><!--end main-->
+
+<hr></hr>
+
+<a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
+  Toolkit home</a>
+
+</blockquote>
+</body>
+</html>

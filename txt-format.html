@@ -1,0 +1,116 @@
+<html>
+<title>dripSearch tab-delimited file format</title>
+<link href="./drip.css" rel="styleSheet" type="text/css">
+</head>
+<body>
+<blockquote>
+<H1 ALIGN=CENTER>Tab-delimited file format</H1>
+<p>
+The output of dripSearch.py consists of a single line containing the
+tab-separated names of fields, followed by one or more lines giving
+the corresponding field values.
+</p>
+<table border="1" align="center" width="50%">
+<!-- table headers-->
+
+   
+
+<tr>
+<th rowspan="2"></th>
+<th rowspan="2">Name</th>
+<th rowspan="2">Description</th>
+</tr>
+
+<tr>
+<!-- <td></td> -->
+<!-- <td></td> -->
+<!-- <td></td> -->
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>1</td>
+<td>Kind</td>
+<td>Target (t), decoy (d), or recalibration decoy (r) PSM.</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>Scan</td>
+<td>The identifying number of each scan.</td>
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>3</td>
+<td>Charge</td>
+<td>The charge state for this PSM.</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td>Peptide</td>
+<td>The peptide sequence.</td>
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>5</td>
+<td>Obs_Inserts</td>
+<td>Inferred number of insertions (observed noise peaks).</td>
+</tr>
+
+<tr>
+<td>6</td>
+<td>Theo_Deletes</td>
+<td>Inferred number of deletions (missing theoretical peaks).</td>
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>7</td>
+<td>Obs_peaks_scored</td>
+<td>Inferred number of non-inserted peaks.</td>
+</tr>
+
+<tr>
+<td>8</td>
+<td>Theo_peaks_used</td>
+<td>Inferred number of non-deleted theoretical peaks.</td>
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>9</td>
+<td>Sum_obs_intensities</td>
+<td>Sum of the inferred non-inserted peak intensities.</td>
+</tr>
+
+<tr>
+<td>10</td>
+<td>Sum_scored_mz_dist</td>
+<td>Sum of the absolute peak m/z distances from the DRIP Gaussian
+  means used to score each non-inserted observed peak.</td>
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>11</td>
+<td>Charge</td>
+<td>Charge state of the PSM.</td>
+</tr>
+
+<tr>
+<td>12</td>
+<td>Flanking_nterm</td>
+<td>Amino acid preceding this peptide in the parent protein.</td>
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>13</td>
+<td>Flanking_cterm</td>
+<td>Amino acid following this peptide in the parent protein.</td>
+</tr>
+
+</table>
+<hr></hr>
+
+<a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
+  ToolKit home</a>
+</blockquote>
+</html>
+</body>

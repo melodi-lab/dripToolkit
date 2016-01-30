@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)http://cruxtoolkit.sourceforge.net/tide-search.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<title>dripDigest</title>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-72240246-3', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</script><style type="text/css"></style>
+<script type="text/javascript">
+  MathJax.Hub.Config({jax: ["input/TeX","output/HTML-CSS"], displayAlign: "left"});
+</script>
+<style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Hover_Arrow {position: absolute; width: 15px; height: 11px; cursor: pointer}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 2px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 2px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; color: #666666}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: 1em}
+.MathJax_MenuRadioCheck.RTL {right: 1em; left: auto}
+.MathJax_MenuLabel {padding: 2px 2em 4px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #CCCCCC; margin: 4px 1px 0px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: Highlight; color: HighlightText}
+.MathJax_Menu_Close {position: absolute; width: 31px; height: 31px; top: -15px; left: -15px}
+</style><style type="text/css">.MathJax_Preview .MJXc-math {color: inherit!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><style type="text/css">.MJXc-script {font-size: .8em}
+.MJXc-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXc-bold {font-weight: bold}
+.MJXc-italic {font-style: italic}
+.MJXc-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-largeop {font-size: 150%}
+.MJXc-largeop.MJXc-int {vertical-align: -.2em}
+.MJXc-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXc-display {display: block; text-align: center; margin: 1em 0}
+.MJXc-math span {display: inline-block}
+.MJXc-box {display: block!important; text-align: center}
+.MJXc-box:after {content: " "}
+.MJXc-rule {display: block!important; margin-top: .1em}
+.MJXc-char {display: block!important}
+.MJXc-mo {margin: 0 .15em}
+.MJXc-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXc-denom {display: inline-table!important; width: 100%}
+.MJXc-denom > * {display: table-row!important}
+.MJXc-surd {vertical-align: top}
+.MJXc-surd > * {display: block!important}
+.MJXc-script-box > *  {display: table!important; height: 50%}
+.MJXc-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXc-script-box > *:last-child > * {vertical-align: bottom}
+.MJXc-script-box > * > * > * {display: block!important}
+.MJXc-mphantom {visibility: hidden}
+.MJXc-munderover {display: inline-table!important}
+.MJXc-over {display: inline-block!important; text-align: center}
+.MJXc-over > * {display: block!important}
+.MJXc-munderover > * {display: table-row!important}
+.MJXc-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXc-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXc-mtr {display: table-row!important}
+.MJXc-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXc-mtr > .MJXc-mtd:first-child {padding-left: 0}
+.MJXc-mtr:first-child > .MJXc-mtd {padding-top: 0}
+.MJXc-mlabeledtr {display: table-row!important}
+.MJXc-mlabeledtr > .MJXc-mtd:first-child {padding-left: 0}
+.MJXc-mlabeledtr:first-child > .MJXc-mtd {padding-top: 0}
+.MJXc-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXc-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXc-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXc-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXc-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXc-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXc-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXc-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXc-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style></head>
+<body><div id="MathJax_Message" style="display: none;"></div>
+<h1>dripDigest</h1>
+<h2>Usage:</h2>
+<p><code>./dripDigest.py [options] --fasta &lt;protein database&gt;</code></p>
+<h2>Description:</h2>
+<p>DripDigest digests a protein database (FASTA file) efficiently
+  given a fixed memory budget.  The
+  resulting peptide database is output in a compact binary format
+  utilized by dripSearch of the DRIP toolkit.<!--   Coded -->
+  <!-- using the Python 2.7 standard library, dripDigest may also be -->
+  <!-- used as an API for other programs looking for a simple and fast -->
+  <!-- out-of-core solution to producing peptide databases which are too -->
+  <!-- large to fit into memory. -->
+  <!-- In DRIP, two -->
+  <!-- types of phenomena occuring in tandem mass spectra are explicitly -->
+  <!-- modeled: spurious observed peaks, called <em>insertions</em>, and -->
+  <!-- missing fragment ions, called <em>deletions</em>. The most probable -->
+  <!-- sequence of insertions  -->
+  If you use
+  dripDigest in your research, please
+  cite: </p><blockquote>John T. Halloran, Jeff
+  A. Bilmes, and William S.
+  Noble. <a href="http://auai.org/uai2014/proceedings/individuals/260.pdf">"Learning
+  Peptide-Spectrum Alignment Models for Tandem Mass
+  Spectrometry"</a>. <em>Thirtieth Conference on Uncertainty in
+  Artificial Intelligence (UAI 2014)</em>. AUAI, Quebic City, Quebec
+  Canada, July 2014.</blockquote>
+<h2>Input:</h2>
+<ul>
+  <li>
+    <code>--digest-dir &lt;string&gt;</code> &ndash; directory to write the
+    resulting peptide database to. Default
+    = <code>dripDigest-output</code>.
+  </li>
+  <li>--fasta <code>&lt;protein database&gt;</code> &ndash; FASTA file.</li>
+</ul>
+<h2>Output:</h2>
+<p>The program writes files to the folder <code>dripDigest-output</code> by
+  default. The name of the output folder can be set by the user using
+  the <code>--digest-dir</code> option. The following files will be
+  created:
+</p><ul>
+  <li>
+    <code>target.txt</code> &ndash;
+    a tab-delimited text file containing the digested peptides
+    if <code>--peptide-list</code> is set to true.
+  </li>
+  <li>
+    <code>decoy.txt</code> &ndash;
+    a tab-delimited text file containing the shuffled digested
+    peptides (decoys) if <code>--peptide-list</code>
+    and <code>--decoys</code> are set to true.
+  </li>
+  <li>
+    <code>targets.bin</code> &ndash;
+    binary file containing digested peptides.
+  </li>
+  <li>
+    <code>decoys.bin</code> &ndash;
+    binary file containing permuted target peptides.  This file will
+    only be created if the <code>--decoys</code> option is set to
+    True.
+  </li>
+  <!-- <li> -->
+  <!--   <code>search.settings.txt</code> –  -->
+  <!--   a file containing the name -->
+  <!--   and value of all parameters/options for the current operation. -->
+  <!-- </li> -->
+</ul>
+<h2>Options:</h2>
+<ul style="list-style-type: none;">
+<li>
+<h3>Program settings</h3>
+<ul>
+  <li>
+    <code>--decoys &lt;T|F&gt;</code> &ndash;
+    whether to create (shuffle target peptides) and search decoy
+    peptides. Default = <code>T</code>.
+  </li>
+  <li>
+    <code>--recalibrate &lt;T|F&gt;</code> &ndash; whether to create second
+    set of decoys (shuffling only). Default = <code>False</code>
+  </li>
+  <li>
+    <code>--peptide-buffer &lt;int&gt;</code> &ndash; 
+    The maximum number of peptides to keep in memory. Default
+    = <code>100000</code>.
+  </li>
+</ul>
+</li>
+<li>
+<h3>Peptide properties</h3>
+<ul>
+  <li>
+    <code>--max-length &lt;integer&gt;</code> 
+    &ndash; The maximum length of peptides to consider. Default
+    = <code>50</code>.
+  </li>
+  <li>
+    <code>--max-mass &lt;float&gt;</code> &ndash; 
+    The maximum mass (in Da) of peptides to consider. Default
+    = <code>7200</code>.
+  </li>
+  <li>
+    <code>--min-length &lt;integer&gt;</code> &ndash; 
+    The minimum length of peptides to consider. Default
+    = <code>6</code>.
+  </li>
+  <li>
+    <code>--min-mass &lt;float&gt;</code> &ndash; 
+    The minimum mass (in Da) of peptides to consider. Default
+    = <code>200</code>.
+  </li>
+  <li>
+    <code>--monoisotopic-precursor &lt;T|F&gt;</code> &ndash; 
+    When computing the mass of a peptide, use monoisotopic masses
+    rather than average masses. Default = <code>true</code>.
+  </li>
+  <!-- <li> -->
+  <!--   <code>--clip-nterm-methionine &lt;T|F&gt;</code> &ndash; -->
+  <!--   When set to T, for each protein that begins with methionine, -->
+  <!--   tide-index will put two copies of the leading peptide into the -->
+  <!--   index, with and without the N-terminal methionine. Default -->
+  <!--   = <code>false</code>. -->
+  <!-- </li> -->
+</ul>
+</li>
+<li>
+<h3>Amino acid modifications</h3>
+<ul>
+  <li>
+    <code>--mods-spec &lt;string&gt;</code> &ndash; 
+    The general form of a modification specification has three
+    components, as exemplified by <span style="color:
+    red;">1</span><span style="color:
+    green;">STY</span>+<span style="color:
+    blue">79.966331</span>.<br>The three components are:
+    [<span style="color:
+    red;">max_per_peptide</span>]<span style="color:
+    green;">residues</span>[+/-]<span style-"color:
+    blue;">mass_change</span><br>In the example, <span style="color:
+    red;">max_per_peptide</span> is <span style="color:
+    red;">1</span>, <span style="color: green;">residues</span>
+    are <span style="color: green;">STY</span>,
+    and <span style="color: blue;">mass_change</span>
+    is <span style="color: blue;">+79.966331</span>. To specify a
+    static modification, the number preceding the amino acid must be
+    omitted; i.e., <span style="color:
+    green;">C</span>+<span style="color: blue;">57.02146</span>
+    specifies a static modification of 57.02146 Da to cysteine. Note
+    that dripDigest allows at most one modification per amino acid.
+    Also, the default modification (C+57.02146) will be added to every
+    mods-spec string unless an explicit C+0 is included. Default
+    = <code>C+57.02146</code>.
+  </li>
+  <li>
+    <code>--cterm-peptide-mods-spec &lt;string&gt;</code> &ndash;
+    Specify peptide c-terminal modifications. See
+    nterm-peptide-mods-spec for syntax. Default
+    = <code>&lt;empty&gt;</code>.
+  </li>
+  <li>
+    <code>--nterm-peptide-mods-spec &lt;string&gt;</code> &ndash; 
+    Specify peptide n-terminal modifications. Like --mods-spec, this
+    specification has three components, but with a slightly different
+    syntax. The <span style="color: red;">max_per_peptide</span> can
+    be either "1", in which case it defines a variable terminal
+    modification, or missing, in which case the modification is
+    static. The <span style="color: green;">residues</span> field
+    indicates which amino acids are subject to the modification, with
+    the residue <span style="color: green;">X</span> corresponding to
+    any amino acid. Finally, <span style="color:
+    blue;">added_mass</span> is defined as before. Default
+    = <code>&lt;empty&gt;</code>.
+  </li>
+  <li>
+    <code>--max-mods &lt;integer&gt;</code> &ndash; 
+    The maximum number of modifications that can be applied to a
+    single peptide. Default = <code>255</code>.
+  </li>
+  <li>
+    <code>--min-mods &lt;integer&gt;</code> &ndash; 
+    The minimum number of modifications that can be applied to a
+    single peptide. Default = <code>0</code>.
+  </li>
+</ul>
+</li>
+<li>
+<h3>Decoy database generation</h3>
+<ul>
+  <li>
+    <code>--decoy-format
+    &lt;shuffle|peptide-reverse&gt;</code>
+    &ndash;
+    Include a decoy version of every peptide by shuffling or reversing
+    the target sequence or protein. In shuffle or peptide-reverse mode,
+    each peptide is either reversed or shuffled, leaving the N-terminal
+    and C-terminal amino acids in place. Note that peptides appear
+    multiple times in the target database are only shuffled once. In
+    peptide-reverse mode, palindromic peptides are shuffled. Also, if a
+    shuffled peptide produces an overlap with the target or decoy
+    database, then the peptide is re-shuffled up to 5 times. Note that,
+    despite this repeated shuffling, homopolymers will appear in both
+    the target and decoy database. The protein-reverse mode reverses the
+    entire protein sequence, irrespective of the composite
+    peptides. Default = <code>shuffle</code>.
+  </li>
+  <li>
+    <code>--keep-terminal-aminos &lt;N|C|NC|none&gt;</code> &ndash; 
+    When creating decoy peptides using decoy-format=shuffle or
+    decoy-format=peptide-reverse, this option specifies whether the
+    N-terminal and C-terminal amino acids are kept in place or allowed
+    to be shuffled or reversed. For a target peptide "EAMPK" with
+    decoy-format=peptide-reverse, setting keep-terminal-aminos to "NC"
+    will yield "EPMAK"; setting it to "C" will yield "PMAEK"; setting
+    it to "N" will yield "EKPMA"; and setting it to "none" will yield
+    "KPMAE". Default = <code>NC</code>.
+  </li>
+  <li>
+    <code>--seed &lt;string&gt;</code> &ndash; 
+    When given a unsigned integer value seeds the random number
+    generator with that value. When given the string "time" seeds the
+    random number generator with the system time. Default
+    = <code>1</code>.
+  </li>
+</ul>
+</li>
+<li>
+<a href="enzymaticDigestion"></a>
+<h3>Enzymatic digestion</h3>
+<ul>
+  <li>
+    <code>--enzyme
+      &lt;no-enzyme|trypsin|trypsin/p|chymotrypsin|elastase|clostripain|cyanogen-bromide|iodosobenzoate|proline-endopeptidase|staph-protease|asp-n|lys-c|lys-n|arg-c|glu-c|pepsin-a|elastase-trypsin-chymotrypsin|custom-enzyme&gt;</code>
+    &ndash; Specify the enzyme used to digest the proteins in
+    silico. Available enzymes (with the corresponding digestion rules
+    indicated in parentheses) include no-enzyme ([X]|[X]), trypsin
+    ([RK]|{P}), trypsin/p ([RK]|[]), chymotrypsin ([FWYL]|{P}), elastase
+    ([ALIV]|{P}), clostripain ([R]|[]), cyanogen-bromide ([M]|[]),
+    iodosobenzoate ([W]|[]), proline-endopeptidase ([P]|[]),
+    staph-protease ([E]|[]), asp-n ([]|[D]), lys-c ([K]|{P}), lys-n
+    ([]|[K]), arg-c ([R]|{P}), glu-c ([DE]|{P}), pepsin-a ([FL]|{P}),
+    elastase-trypsin-chymotrypsin ([ALIVKRWFY]|{P}). Specifying --enzyme
+    no-enzyme yields a non-enzymatic digest. <strong>Warning:</strong>
+    the resulting peptide database may be quite large. Default
+    = <code>trypsin</code>.
+  </li>
+  <li>
+    <code>--custom-enzyme &lt;string&gt;</code> 
+    &ndash; Specify rules for in silico digestion of protein
+    sequences. Overrides the enzyme option. Two lists of residues are
+    given enclosed in square brackets or curly braces and separated by
+    a |. The first list contains residues required/prohibited before
+    the cleavage site and the second list is residues after the
+    cleavage site. If the residues are required for digestion, they
+    are in square brackets, '[' and ']'. If the residues prevent
+    digestion, then they are enclosed in curly braces, '{' and
+    '}'. Use X to indicate all residues. For example, trypsin cuts
+    after R or K but not before P which is represented as
+    [RK]|{P}. AspN cuts after any residue but only before D which is
+    represented as [X]|[D]. Default = <code>&lt;empty&gt;</code>.
+  </li>
+  <li><code>--digestion
+  &lt;full-digest|partial-digest&gt;</code>
+  &ndash; Specify whether every peptide in the database must have two
+  enzymatic termini (full-digest) or if peptides with only one
+  enzymatic terminus are also included (partial-digest). Default
+  = <code>full-digest</code>.</li>
+  <li>
+    <code>--missed-cleavages &lt;integer&gt;</code> 
+    &ndash; Maximum number of missed cleavages per peptide to allow in
+    enzymatic digestion. Default = <code>0</code>.
+  </li>
+</ul>
+</li>
+</ul>
+<hr>
+<a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
+  Toolkit home</a>
+
+
+</body></html>
