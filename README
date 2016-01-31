@@ -24,7 +24,7 @@ Cygwin (if using Windows)
 g++
 the Graphical Models ToolKit (GMTK) - https://melodi.ee.washington.edu/gmtk/
 Python 2.7
-argparse, numpy, scipy python packages
+argparse and numpy python packages
 SWIG
 
 After installing the above, perform the following in the unzipped toolkit directory:
