@@ -9,7 +9,8 @@
 
 import itertools
 import math
-import scipy.interpolate
+import numpy
+# import scipy.interpolate
 ####### how to use linear interpolation:
 ####### y_interp = scipy.interpolate.interp1d(x,y)
 ####### new_range = range(10)
@@ -219,6 +220,38 @@ def renorm_partition(partition, dist, percentile = 0.99):
                 partition[part_ind].score = m*(partition[part_ind].score-lb)+lb_y
                 part_ind += 1
 
+def standardNorm_partition(partition, dist):
+    """ Fit scores of PSMs in partition to the distribution dist using linear interpolation
+    Inputs:
+        dist = set of two lists such that: 
+               dist[0] = x-values of renormalized distribution, dist[1]=y-values
+        partition = list of all target and decoy scores, a single
+        equivalence class under the predefined equivalance relation(i.e. 
+        peptide length, peptide charge, etc.).  Currently, the only
+        supported/assumed equivalence relation is the length of the peptide.
+        
+    Post-conditions:
+        Scores of PSMs in partition are fit to the distribution in dist
+
+        fields: 0) isTarget, boolean
+                1) peptide length, integer
+                2) spectrum id, integer
+                3) peptide index number, integer
+                4) Score, float
+    """
+    ################# old
+    # fields: 0) isTarget, boolean
+    #         1) peptide length, integer
+    #         2) spectrum id, integer
+    #         3) peptide index number, integer
+    #         4) Score, float
+    ################# new code base: partition is a tuple of PSM objects
+    m = numpy.mean(dist)
+    v = numpy.std(dist)
+
+    for ind in range(len(partition)):
+        partition[ind].score = (partition[ind].score - m) / v
+
 def decoy_charge_partition_dist(ch_scores):
     """ Calculate rank normalization distributions per charge run (partition) to fit
         scores to
@@ -243,9 +276,10 @@ def recalibrate_charge_psms(output_file, psms_by_charge,
     # calculate distributions per partition(charge)
     psms = []
     for c in training_decoys_by_charge:
-        renorm_partition(psms_by_charge[c], 
-                         decoy_charge_partition_dist(training_decoys_by_charge[c]), 
-                         percentile)
+        standardNorm_partition(psms_by_charge[c], training_decoys_by_charge[c])
+        # renorm_partition(psms_by_charge[c], 
+        #                  decoy_charge_partition_dist(training_decoys_by_charge[c]), 
+        #                  percentile)
         psms += psms_by_charge[c]
 
     tTop, dTop = returnTopPsms(psms, topPsms)

@@ -13,7 +13,7 @@ import itertools
 import types
 import numpy
 import math
-import scipy.interpolate
+# import scipy.interpolate
 import collections
 
 from pyFiles.psm import PSM
