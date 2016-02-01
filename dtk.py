@@ -118,9 +118,11 @@ def load_spectra(spectra):
     spectra, minMz, maxMz, validcharges, _ = load_spectra_ret_dict(spectra, 'all')
     return spectra
 
-def plot_psms(psmFile, spectrumFile, highResMs2 = False,
-              mods = '', ntermMods = '', ctermMods = '',
-              dripLearnedMeans = 'dripLearned.means'):
+def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
+              highResMs2 = False,
+              dripLearnedMeans = 'dripLearned.means',
+              dripLearnedCovars = 'dripLearned.covars',
+              mods = '', ntermMods = '', ctermMods = ''):
     """
     """
     # parse modifications
@@ -190,15 +192,17 @@ def plot_psms(psmFile, spectrumFile, highResMs2 = False,
                            ion_to_index_map)
         all_psms.append(p)
 
-    fid = open('currPsms.html', "w")
+    fid = open(plotList, "w")
 
     all_psms.sort(key = lambda r: r.score, reverse = True)
     # for p in all_psms.sort(key = lambda r: r.score):
     for p in all_psms:
         if p.kind == 't':
             kind = 'target'
-        else:
+        elif p.kind == 'd':
             kind = 'decoy'
+        else:
+            continue
 
         plotName = kind + 'Scan' + str(p.scan) + \
             'Charge' + str(p.charge) + \
@@ -209,7 +213,6 @@ def plot_psms(psmFile, spectrumFile, highResMs2 = False,
                   (plotName, kind, p.scan, p.charge, p.peptide))
 
     fid.close()
-    # return t, d
 
 def psm(p, s0, c = 2, highResMs2 = False,
         dripLearnedMeans = 'dripLearned.means',
