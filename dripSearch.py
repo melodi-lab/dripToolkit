@@ -283,9 +283,9 @@ def parseInputOptions():
     parser.add_argument('--normalize', dest = "normalize", type = str,
                         help = "Name of the spectrum preprocessing pipeline.", 
                         default = 'top300TightSequest')
-    help_filt_theo_peaks = "Filter theoretical peaks outside of observed spectra min and max"
-    parser.add_argument('--filt_theo_peaks', action = 'store_false', dest = 'filt_theo_peaks', 
-                        default = True, help = help_filt_theo_peaks)
+    # help_filt_theo_peaks = "Filter theoretical peaks outside of observed spectra min and max"
+    # parser.add_argument('--filt_theo_peaks', action = 'store_false', dest = 'filt_theo_peaks', 
+    #                     default = True, help = help_filt_theo_peaks)
     parser.add_argument('--per_spectrum_mz_bound', action = 'store_true', 
                         default = False, help = "Calculate observed m/z bound per spectrum")
     parser.add_argument('--mz_lb', type = float, action = 'store',
