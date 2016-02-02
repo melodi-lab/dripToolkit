@@ -199,7 +199,7 @@ def make_drip_data_highres(args, spectra, stdo, stde):
     else:
         target,decoy,num_psms = load_pin_file(args.psm_file)
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
-    sid_charges = list(target.iterkeys())
+    sid_charge =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
     # assume that we should randomize PSMs for multithreading purposes; only reason
     # why we are currently assuming this is that there is already a parameter for dripSearch
     # which signifies whether we should shuffle the data
@@ -331,14 +331,14 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
 
     # parse modifications
     mods = df.parse_mods(args.mods_spec, True)
-    print "mods:"
-    print mods
+    # print "mods:"
+    # print mods
     ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
-    print "n-term mods:"
-    print ntermMods
+    # print "n-term mods:"
+    # print ntermMods
     ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
-    print "c-term mods:"
-    print ctermMods
+    # print "c-term mods:"
+    # print ctermMods
 
     # load means
     dripMeans = load_drip_means(args.learned_means)
@@ -350,10 +350,9 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
     else:
         target,decoy,num_psms = load_pin_file(args.psm_file)
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
-    sid_charges = list(target.iterkeys())
+    sid_charge =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
+    # sid_charges = list(set(list(target.iterkeys()) + list(decoy.iterkeys())))
 
-    print target
-    print decoy
     # assume that we should randomize PSMs for multithreading purposes; only reason
     # why we are currently assuming this is that there is already a parameter for dripSearch
     # which signifies whether we should shuffle the data
@@ -450,7 +449,7 @@ def runDripExtract(args, stdo, stde):
     vitStr0 = "gmtkViterbi -strFile " + args.structure_file \
         + " -triFile " + args.structure_file + ".trifile -ni1 0 -nf1 2 -ni2 1 -nf2 0" \
         + " -fdiffact2 rl" \
-        + " -inputMasterFile model.mtr -inputTrainableParameters trained.params -failOnZeroClique F"
+        + " -inputMasterFile " + args.master_file + " -inputTrainableParameters trained.params -failOnZeroClique F"
 
     # for now, don't worry about checking whether peptide is in valid (i.e., present in the digested
     # set of peptide candidates given the protein database)
@@ -676,10 +675,10 @@ if __name__ == '__main__':
     parser.add_argument('--mz_ub', type = float, action = 'store',
                         dest = 'mz_ub', help = 'Upper m/z bound' ,default = 2000.0)
     parser.add_argument('--structure-file', type = str, action = 'store',
-                        default = 'model.str',
+                        default = 'drip.str',
                         help = "DRIP GMTK structure file")
     parser.add_argument('--master-file', type = str, action = 'store',
-                        default = 'model.mtr',
+                        default = 'drip.mtr',
                         help = "DRIP GMTK master file")
     parser.add_argument('--collection-dir', action = 'store', dest = 'collection_dir',
                         type = str, help = 'Where to store Gaussian files', 
@@ -727,36 +726,6 @@ if __name__ == '__main__':
     parser.add_argument('--dpmf_name', action = 'store', dest = 'dpmf_name',
                         type = str, help = 'DPMF name.', 
                         default = 'unityDPMF')
-
-    # parser.add_argument('--mean-file', action = 'store', dest = 'mean_file',
-    #                     type = str, help = 'Where to put mean file.')
-    # parser.add_argument('--covar-file', action = 'store',
-    #                     type = str, help = 'Covariance file name', 
-    #                     default = "covar.txt")
-    # parser.add_argument('--gauss_file', action = 'store', dest = 'gauss_file',
-    #                     type = str, help = 'Gaussians.')
-
-    # parser.add_argument('--mixture_file', action = 'store', dest = 'mixture_file',
-    #                     type = str, help = 'Gaussian mixtures.')
-
-    # parser.add_argument('--collection_file', action = 'store', dest = 'collection_file',
-    #                     type = str, help = 'Where to put collection file.')
-
-    # parser.add_argument('--covar_name', action = 'store', dest = 'covar_name',
-    #                     type = str, help = 'Variance name.')
-
-    # parser.add_argument('--mixture_name', action = 'store', dest = 'mixture_name',
-    #                     type = str, help = 'Gaussian mixture name.')
-
-    # parser.add_argument('--gaussian_component_name', action = 'store', dest = 'gaussian_component_name',
-    #                     type = str, help = 'Gaussian mixture name.')
-
-    # parser.add_argument('--collection_name', action = 'store', dest = 'collection_name',
-    #                     type = str, help = 'Gaussian mixture name.')
-
-    # parser.add_argument('--dpmf_name', action = 'store', dest = 'dpmf_name',
-    #                     type = str, help = 'DPMF name.')
-
     # add output file options as a separate group
     oFileGroup = parser.add_argument_group('oFileGroup', 'Output file options')
     help_write_pin = '<T|F> - Write output in percolator PIN format. Default = False'
@@ -768,12 +737,6 @@ if __name__ == '__main__':
     help_output_file = '<string> - Output file for resulting peptides.'
     oFileGroup.add_argument('--output_file', type = str, action = 'store', 
                             default = 'peptides.txt', help = help_output_file)
-    # help_peptide_database_file = """<string> - Output file for resulting peptides. Assumed to be binary format (i.e., python pickle file) for quick future access. See target-output-file/decoy-output-file options for ASCII file equivalents. Default = None."""
-    # oFileGroup.add_argument('--peptide-database-file', type = str, action = 'store', 
-    #                         default = '', help = help_peptide_database_file)
-    # help_load_peptide_database_file = """<T|F> - Load previously digested peptide database file. If the supplied --peptide-database-file does not exist, the protein database will be digested. If decoys is true and no decoys are contained in the pickle, decoys will be created on the fly. Default = F."""
-    # oFileGroup.add_argument('--load-peptide-database-file', type = str, action = 'store', 
-    #                         default = 'False', help = help_load_peptide_database_file)
     oFileGroup.add_argument('--logDir', type = str, 
                       help = 'directory to collect output DRIP results.', default = 'log')
     oFileGroup.add_argument('--output', type = str,
@@ -811,7 +774,7 @@ if __name__ == '__main__':
         vitStr0 = "gmtkViterbi -strFile " + args.structure_file \
             + " -triFile " + args.structure_file + ".trifile -ni1 0 -nf1 2 -ni2 1 -nf2 0" \
             + " -fdiffact2 rl" \
-            + " -inputMasterFile model.mtr -inputTrainableParameters trained.params -failOnZeroClique F"
+            + " -inputMasterFile " + args.master_file + " -inputTrainableParameters trained.params -failOnZeroClique F"
 
         # for now, don't worry about checking whether peptide is in valid (i.e., present in the digested
         # set of peptide candidates given the protein database)
@@ -914,35 +877,6 @@ if __name__ == '__main__':
     ####################################################################################
 
     if args.write_pin:
-        # if not args.append_to_pin: # load database features to write drip output
-        #     # database information required
-        #     # formulate digestion regular expression
-        #     digest_re = df.create_digest_re(args.enzyme, args.custom_enzyme)
-        #     print "digest regular expression: %s" % digest_re
-        #     r = re.compile(digest_re)
-
-        #     # parse modifications
-        #     mods = df.parse_mods(args.mods_spec, True)
-        #     print "mods:"
-        #     print mods
-        #     nterm_mods = df.parse_mods(args.nterm_peptide_mods_spec, False)
-        #     print "n-term mods:"
-        #     print nterm_mods
-        #     cterm_mods = df.parse_mods(args.cterm_peptide_mods_spec, False)
-        #     print "c-term mods:"
-        #     print cterm_mods
-
-        #     cleavage_req = df.enzyme_enzSet(args.enzyme, args.custom_enzyme)
-        #     target_db, decoy_db = load_target_decoy_db_no_reshuffle(args, r, mods, nterm_mods, cterm_mods)
-        #     psm.write_percolator_pin(targets, decoys, args.output, args.mean_file, spec_dict, 
-        #                              cleavage_req, target_db, decoy_db)
-        # else: # don't worry about database features, just append DRIP features to PIN file's features
-        #     targets0,decoys0 = load_pin_return_dict(args.psm_file)
-        #     # merge the loaded PSM features with DRIP
-        #     psm.append_to_percolator_pin(targets, decoys, 
-        #                                  targets0, decoys0,
-        #                                  args.output, 
-        #                                  args.mean_file, spec_dict)
         targets0,decoys0 = load_pin_return_dict(args.psm_file)
         # merge the loaded PSM features with DRIP
         psm.append_to_percolator_pin(targets, decoys, 
