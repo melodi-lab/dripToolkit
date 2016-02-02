@@ -201,7 +201,12 @@ def copyArgs(argsA, argsB):
         print "Could not create observation directory %s, exitting" % os.path.abspath(args.collection_dir)
         exit(-1)
 
+
     args.covar_file = os.path.join(os.path.abspath(args.collection_dir), args.covar_file)
+    args.mean_file = os.path.join(os.path.abspath(args.collection_dir), args.mean_file)
+    args.gauss_file = os.path.join(os.path.abspath(args.collection_dir), args.gauss_file)
+    args.mixture_file = os.path.join(os.path.abspath(args.collection_dir), args.mixture_file)
+    args.collection_file = os.path.join(os.path.abspath(args.collection_dir), args.collection_file)
 
     if not args.filter_ident:
         args.ident = ''
@@ -350,7 +355,7 @@ def parseInputOptions():
     oFileGroup.add_argument('--pepDBperSidList', type = str,
                       help = 'file listing number of peptides in database per spectrum')
     oFileGroup.add_argument('--output', type = str,
-                      help = 'ident file name')
+                      help = 'identification file name')
 
     return parser.parse_args()
 

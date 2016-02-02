@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 #
-# Copyright 2015 <fill in later>
+# Written by John Halloran <halloj3@ee.washington.edu>
+#
+# Copyright (C) 2016 John Halloran
+# Licensed under the Open Software License version 3.0
+# See COPYING or http://opensource.org/licenses/OSL-3.0
 
 from __future__ import with_statement
 
 __authors__ = ['John Halloran <halloj3@uw.edu>' ]
-
-# todo: add count of number missed cleavages to features
 
 import os
 import re
@@ -84,7 +86,6 @@ def process_args(args):
         print "Supplied max-mass %d, must be greater than 0, exitting" % args.max_obs_mass
         exit(-1)
     # check arguments
-    assert(args.shards > 0)
     # if not args.output_file or not args.fasta:
     if not args.output_file:
         parser.print_help()
@@ -134,6 +135,10 @@ def process_args(args):
         exit(-1)
 
     args.covar_file = os.path.join(os.path.abspath(args.collection_dir), args.covar_file)
+    args.mean_file = os.path.join(os.path.abspath(args.collection_dir), args.mean_file)
+    args.gauss_file = os.path.join(os.path.abspath(args.collection_dir), args.gauss_file)
+    args.mixture_file = os.path.join(os.path.abspath(args.collection_dir), args.mixture_file)
+    args.collection_file = os.path.join(os.path.abspath(args.collection_dir), args.collection_file)
 
     if not args.filter_ident:
         args.ident = ''
@@ -141,18 +146,18 @@ def process_args(args):
     # set true or false strings to booleans
     args.write_pin = df.check_arg_trueFalse(args.write_pin)
     args.append_to_pin = df.check_arg_trueFalse(args.append_to_pin)
-    args.monoisotopic_precursor = df.check_arg_trueFalse(args.monoisotopic_precursor)
+    # args.monoisotopic_precursor = df.check_arg_trueFalse(args.monoisotopic_precursor)
     args.high_res_ms2 = df.check_arg_trueFalse(args.high_res_ms2)
     args.randomize_ms2_spectra = df.check_arg_trueFalse(args.randomize_ms2_spectra)
 
     # args.decoys = df.check_arg_trueFalse(args.decoys)
     # args.load_peptide_database_file = df.check_arg_trueFalse(args.load_peptide_database_file)
     # check precursor mass type
-    pmt = args.precursor_window_type.lower()
-    if pmt == 'da':
-        args.ppm = False
-    else:
-        args.ppm = True
+    # pmt = args.precursor_window_type.lower()
+    # if pmt == 'da':
+    #     args.ppm = False
+    # else:
+    #     args.ppm = True
 
     # make sure number of input threads does not exceed number of supported threads
     if args.num_threads > multiprocessing.cpu_count():
@@ -180,14 +185,14 @@ def make_drip_data_highres(args, spectra, stdo, stde):
     """
     # parse modifications
     mods = df.parse_mods(args.mods_spec, True)
-    print "mods:"
-    print mods
+    # print "mods:"
+    # print mods
     ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
-    print "n-term mods:"
-    print ntermMods
+    # print "n-term mods:"
+    # print ntermMods
     ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
-    print "c-term mods:"
-    print ctermMods
+    # print "c-term mods:"
+    # print ctermMods
 
     if not args.append_to_pin:
         target,decoy,num_psms = load_psms(args.psm_file)
@@ -195,7 +200,6 @@ def make_drip_data_highres(args, spectra, stdo, stde):
         target,decoy,num_psms = load_pin_file(args.psm_file)
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
     sid_charges = list(target.iterkeys())
-
     # assume that we should randomize PSMs for multithreading purposes; only reason
     # why we are currently assuming this is that there is already a parameter for dripSearch
     # which signifies whether we should shuffle the data
@@ -348,6 +352,8 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
     sid_charges = list(target.iterkeys())
 
+    print target
+    print decoy
     # assume that we should randomize PSMs for multithreading purposes; only reason
     # why we are currently assuming this is that there is already a parameter for dripSearch
     # which signifies whether we should shuffle the data
@@ -391,21 +397,22 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
                 minMz = args.mz_lb
                 maxMz = args.mz_ub
 
-        for p in target[sid,charge]:
-            pep = p.peptide
-            bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods,
-                                             ntermMods, ctermMods)
-            pepdb_list.write("t\t%d\t%s\t%d\t%d\n" % (sid, pep, len(bNy), charge))
-            # numBY for DRIP features assumes all b-/y-ions, not just those
-            # unfiltered per spectrum
-            if args.filt_theo_peaks:
-                filter_theoretical_peaks_lowres(bNy, dripMeans,
-                                                minMz, maxMz)
-            drip_peptide_sentence(pep_dt, pep, bNy, 
-                                  pep_num, s.spectrum_id, args.max_obs_mass,
-                                  peptide_pfile, True, len(bNy))
-            drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
-            pep_num += 1
+        if (sid,charge) in target:
+            for p in target[sid,charge]:
+                pep = p.peptide
+                bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods,
+                                                 ntermMods, ctermMods)
+                pepdb_list.write("t\t%d\t%s\t%d\t%d\n" % (sid, pep, len(bNy), charge))
+                # numBY for DRIP features assumes all b-/y-ions, not just those
+                # unfiltered per spectrum
+                if args.filt_theo_peaks:
+                    filter_theoretical_peaks_lowres(bNy, dripMeans,
+                                                    minMz, maxMz)
+                drip_peptide_sentence(pep_dt, pep, bNy, 
+                                      pep_num, s.spectrum_id, args.max_obs_mass,
+                                      peptide_pfile, True, len(bNy))
+                drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
+                pep_num += 1
 
         if (sid,charge) in decoy:
             for d in decoy[sid,charge]:
@@ -557,10 +564,10 @@ if __name__ == '__main__':
                             help = help_pepdb)
     ############## search parameters
     searchParamsGroup = parser.add_argument_group('searchParamsGroup', 'Search parameter options.')
-    help_precursor_window = """<float> - Tolerance used for matching peptides to spectra.  Peptides must be within +/-'precursor-window' of the spectrum value. The precursor window units depend upon precursor-window-type. Default=3."""
-    searchParamsGroup.add_argument('--precursor-window', type = float, action = 'store', default = 3.0, help = help_precursor_window)
-    help_precursor_window_type = """<Da|ppm> - Specify the units for the window that is used to select peptides around the precursor mass location, either in Daltons (Da) or parts-per-million (ppm). Default=Da."""
-    searchParamsGroup.add_argument('--precursor-window-type', type = str, action = 'store', default = 'Da', help = help_precursor_window_type)
+    # help_precursor_window = """<float> - Tolerance used for matching peptides to spectra.  Peptides must be within +/-'precursor-window' of the spectrum value. The precursor window units depend upon precursor-window-type. Default=3."""
+    # searchParamsGroup.add_argument('--precursor-window', type = float, action = 'store', default = 3.0, help = help_precursor_window)
+    # help_precursor_window_type = """<Da|ppm> - Specify the units for the window that is used to select peptides around the precursor mass location, either in Daltons (Da) or parts-per-million (ppm). Default=Da."""
+    # searchParamsGroup.add_argument('--precursor-window-type', type = str, action = 'store', default = 'Da', help = help_precursor_window_type)
     help_scan_id_list = """<string> - A file containing a list of scan IDs to search.  Default = <empty>."""
     searchParamsGroup.add_argument('--scan-id-list', type = str, action = 'store', default = '', help = help_scan_id_list)
     help_charges = """<comma-separated-integers|all> - precursor charges to search. To specify individual charges, list as comma-separated, e.g., 1,2,3 to search all charge 1, 2, or 3 spectra. Default=All."""
@@ -573,9 +580,9 @@ if __name__ == '__main__':
     help_num_threads = '<integer> - the number of threads to run on a multithreaded CPU. If supplied value is greater than number of supported threads, defaults to the maximum number of supported threads minus one. Multithreading is not suppored for cluster use as this is typically handled by the cluster job manager. Default=1.'
     searchParamsGroup.add_argument('--num-threads', type = int, action = 'store', 
                                    default = 1, help = help_num_threads)
-    help_top_match = '<integer> - The number of psms per spectrum written to the output files. Default=1.'
-    searchParamsGroup.add_argument('--top-match', type = int, action = 'store', 
-                                   default = 1, help = help_top_match)
+    # help_top_match = '<integer> - The number of psms per spectrum written to the output files. Default=1.'
+    # searchParamsGroup.add_argument('--top-match', type = int, action = 'store', 
+    #                                default = 1, help = help_top_match)
     ############## Cluster usage parameters
     clusterUsageGroup = parser.add_argument_group('clusterUsageGroup', 'Cluster data generation options.')
     help_randomize_ms2_spectra = '<T|F> - whether to randomize order of spectra when splitting ms2 file. Default = True'
@@ -595,15 +602,15 @@ if __name__ == '__main__':
     max_mass_help = """<float> - The maximum mass (in Da) of peptides to consider. Default = 7200."""
     peptidePropertiesGroup.add_argument('--max-mass', type = float, action = 'store',
                                         default = 7200.0, help = max_mass_help)
-    min_length_help = """<integer> - The minimum length of peptides to consider. Default = 6."""
-    peptidePropertiesGroup.add_argument('--min-length', type = int, action = 'store',
-                                        default = 6, help = min_length_help)
+    # min_length_help = """<integer> - The minimum length of peptides to consider. Default = 6."""
+    # peptidePropertiesGroup.add_argument('--min-length', type = int, action = 'store',
+    #                                     default = 6, help = min_length_help)
     min_mass_help = """<float> - The minimum mass (in Da) of peptides to consider. Default = 7200."""
     peptidePropertiesGroup.add_argument('--min-mass', type = float, action = 'store',
                                         default = 200.0, help = min_mass_help)
-    monoisotopic_precursor_help = """<T|F> - When computing the mass of a peptide, use monoisotopic masses rather than average masses. Default = true."""
-    peptidePropertiesGroup.add_argument('--monoisotopic-precursor', type = str, action = 'store', 
-                                        default = 'True', help = monoisotopic_precursor_help)
+    # monoisotopic_precursor_help = """<T|F> - When computing the mass of a peptide, use monoisotopic masses rather than average masses. Default = true."""
+    # peptidePropertiesGroup.add_argument('--monoisotopic-precursor', type = str, action = 'store', 
+    #                                     default = 'True', help = monoisotopic_precursor_help)
     ############## amino acid modifications
     aaModsGroup = parser.add_argument_group('aaModsGroup', 'Options for amino acid modifications.')
     aaModsGroup.add_argument('--mods-spec', type = str, action = 'store',
@@ -648,7 +655,6 @@ if __name__ == '__main__':
     parser.add_argument('--output-dir', type = str, default = 'encode')
     parser.add_argument('--obs-dir', type = str, action = 'store',
                         default = 'obs')
-    parser.add_argument('--shards', type = int, action = 'store')
     parser.add_argument('--num_spectra', type = int, action = 'store')
     parser.add_argument('--ppm', action = 'store_true',
                         default = False)
@@ -663,9 +669,6 @@ if __name__ == '__main__':
     parser.add_argument('--normalize', dest = "normalize", type = str,
                         help = "Name of the spectrum preprocessing pipeline.", 
                         default = 'top300TightSequest')
-    # help_filt_theo_peaks = "Filter theoretical peaks outside of observed spectra min and max"
-    # parser.add_argument('--filt_theo_peaks', action = 'store_true', dest = 'filt_theo_peaks', 
-    #                     default = False, help = help_filt_theo_peaks)
     parser.add_argument('--per_spectrum_mz_bound', action = 'store_true', 
                         default = False, help = "Calculate observed m/z bound per spectrum")
     parser.add_argument('--mz_lb', type = float, action = 'store',
@@ -679,39 +682,80 @@ if __name__ == '__main__':
                         default = 'model.mtr',
                         help = "DRIP GMTK master file")
     parser.add_argument('--collection-dir', action = 'store', dest = 'collection_dir',
-                        type = str, help = 'Where to store Gaussian files')
+                        type = str, help = 'Where to store Gaussian files', 
+                        default = 'drip_collection')
     parser.add_argument('--learned-means', action = 'store', dest = 'learned_means',
                         type = str, help = 'Learned means', default = "riptideLearnedMeans.txt")
     parser.add_argument('--learned-covars', action = 'store', dest = 'learned_covars',
                         type = str, help = 'Learned covariances', default = "riptideLearnedCovars.txt")
-    parser.add_argument('--mean-file', action = 'store', dest = 'mean_file',
-                        type = str, help = 'Where to put mean file.')
-    parser.add_argument('--covar-file', action = 'store',
-                        type = str, help = 'Covariance file name', 
-                        default = "covar.txt")
+
+    help_mean_file = """<string> - Where to write model means. Default = drip.means"""
+    parser.add_argument('--mean-file', type = str, action = 'store', default = "drip_mz.txt",
+                            help = help_mean_file)
+    help_covar_file = """<string> - Where to write model covariances. Default = covar.txt"""
+    parser.add_argument('--covar-file', type = str, action = 'store', default = "covar.txt",
+                            help = help_covar_file)
+
     parser.add_argument('--gauss_file', action = 'store', dest = 'gauss_file',
-                        type = str, help = 'Gaussians.')
+                        type = str, help = 'Gaussians.', 
+                        default = 'drip_Gaussian_components.txt')
 
     parser.add_argument('--mixture_file', action = 'store', dest = 'mixture_file',
-                        type = str, help = 'Gaussian mixtures.')
+                        type = str, help = 'Gaussian mixtures.',
+                        default = 'drip_Gaussian_mixtures.txt')
 
     parser.add_argument('--collection_file', action = 'store', dest = 'collection_file',
-                        type = str, help = 'Where to put collection file.')
+                        type = str, help = 'Where to put collection file.',
+                        default = 'drip_mz_Gaussians.txt')
 
     parser.add_argument('--covar_name', action = 'store', dest = 'covar_name',
-                        type = str, help = 'Variance name.')
+                        type = str, help = 'Variance name.',
+                        default = 'covar0')
 
     parser.add_argument('--mixture_name', action = 'store', dest = 'mixture_name',
-                        type = str, help = 'Gaussian mixture name.')
+                        type = str, help = 'Gaussian mixture name.',
+                        default = 'mixture')
 
     parser.add_argument('--gaussian_component_name', action = 'store', dest = 'gaussian_component_name',
-                        type = str, help = 'Gaussian mixture name.')
+                        type = str, help = 'Gaussian mixture name.',
+                        default = 'gc')
 
     parser.add_argument('--collection_name', action = 'store', dest = 'collection_name',
-                        type = str, help = 'Gaussian mixture name.')
+                        type = str, help = 'Gaussian mixture name.', 
+                        default = 'drip_mz_Gaussians')
 
     parser.add_argument('--dpmf_name', action = 'store', dest = 'dpmf_name',
-                        type = str, help = 'DPMF name.')
+                        type = str, help = 'DPMF name.', 
+                        default = 'unityDPMF')
+
+    # parser.add_argument('--mean-file', action = 'store', dest = 'mean_file',
+    #                     type = str, help = 'Where to put mean file.')
+    # parser.add_argument('--covar-file', action = 'store',
+    #                     type = str, help = 'Covariance file name', 
+    #                     default = "covar.txt")
+    # parser.add_argument('--gauss_file', action = 'store', dest = 'gauss_file',
+    #                     type = str, help = 'Gaussians.')
+
+    # parser.add_argument('--mixture_file', action = 'store', dest = 'mixture_file',
+    #                     type = str, help = 'Gaussian mixtures.')
+
+    # parser.add_argument('--collection_file', action = 'store', dest = 'collection_file',
+    #                     type = str, help = 'Where to put collection file.')
+
+    # parser.add_argument('--covar_name', action = 'store', dest = 'covar_name',
+    #                     type = str, help = 'Variance name.')
+
+    # parser.add_argument('--mixture_name', action = 'store', dest = 'mixture_name',
+    #                     type = str, help = 'Gaussian mixture name.')
+
+    # parser.add_argument('--gaussian_component_name', action = 'store', dest = 'gaussian_component_name',
+    #                     type = str, help = 'Gaussian mixture name.')
+
+    # parser.add_argument('--collection_name', action = 'store', dest = 'collection_name',
+    #                     type = str, help = 'Gaussian mixture name.')
+
+    # parser.add_argument('--dpmf_name', action = 'store', dest = 'dpmf_name',
+    #                     type = str, help = 'DPMF name.')
 
     # add output file options as a separate group
     oFileGroup = parser.add_argument_group('oFileGroup', 'Output file options')
@@ -731,9 +775,9 @@ if __name__ == '__main__':
     # oFileGroup.add_argument('--load-peptide-database-file', type = str, action = 'store', 
     #                         default = 'False', help = help_load_peptide_database_file)
     oFileGroup.add_argument('--logDir', type = str, 
-                      help = 'directory with output log files')
+                      help = 'directory to collect output DRIP results.', default = 'log')
     oFileGroup.add_argument('--output', type = str,
-                      help = 'ident file name')
+                      help = 'identification file name')
     args = parser.parse_args()
 
     # process input arguments

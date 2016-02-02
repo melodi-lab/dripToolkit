@@ -2426,7 +2426,9 @@ def create_decoys(targets, decoy_format, keep_terminal_aminos, s0):
             d = ''.join(shuffled_target)
             perms = 1
             properly_shuffled = 1
-            max_iters = 100*len(l)
+            # max_iters = 100*len(l)
+            # 5 times, just like crux tide-index
+            max_iters = 5 
             while d in targets or d in decoys:
                 if perms >= max_iters:
                     properly_shuffled = 0
