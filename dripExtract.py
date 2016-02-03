@@ -877,12 +877,17 @@ if __name__ == '__main__':
     ####################################################################################
 
     if args.write_pin:
-        targets0,decoys0 = load_pin_return_dict(args.psm_file)
-        # merge the loaded PSM features with DRIP
-        psm.append_to_percolator_pin(targets, decoys, 
-                                     targets0, decoys0,
-                                     args.output, 
-                                     args.mean_file, spec_dict)
+        if args.append_to_pin:
+            targets0,decoys0 = load_pin_return_dict(args.psm_file)
+            # merge the loaded PSM features with DRIP
+            psm.append_to_percolator_pin(targets, decoys, 
+                                         targets0, decoys0,
+                                         args.output, 
+                                         args.mean_file, spec_dict)
+        else: # 
+            exit(-1)
+            # todo: make sure Protein_id field is present in file, since protein is a mandatory field
+            # in the pin file
 
     else:
         psm.write_output(targets, decoys, args.output, args.mean_file, spec_dict)
