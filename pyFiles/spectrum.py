@@ -346,6 +346,58 @@ class MS2Spectrum(object):
         self.mz = processed_mz
         self.intensity = processed_intensity
 
+    def region_normalize_unnorm(self, regions, min_mz, max_mz, thresh, precursor_tol = 0):
+        """Max-normalize to number of N evenly-spaced regions, pruning
+        peaks which are >= 5% of maximum peak intensity
+        """
+        values = [math.sqrt(i) for i in self.intensity]
+        processed_mz = []
+        processed_intensity = []
+        inc = float(math.ceil((max_mz-min_mz)/float(regions)))
+        start = 0
+        stop = 0
+        bins = numpy.arange(min_mz+inc, max_mz+inc, inc)
+        last_el = len(values)-1
+        boundary = 0
+
+        # normalize N evenly spaced regions
+        for right_edge in bins:
+            if stop > last_el:
+                if(boundary == 0): # last element is in a bin by itself
+                    self.intensity[last_el] = 1.0
+                break
+            while(self.mz[stop] < right_edge): 
+                stop = stop + 1
+                if stop > last_el: 
+                    break
+            if(stop == last_el): #broke at last element, check where last element should belong to
+                if(self.mz[stop]<=right_edge): #last element belongs in current bin
+                    boundary = 1
+                    stop = stop+1
+            elif(stop > last_el):
+                if(self.mz[stop-1]<=right_edge):
+                    boundary = 1
+            if(stop != start):
+                # normalize bins to unity
+                bin_max = max(values[start:stop])
+                self.intensity[start:stop] = [peak/bin_max for peak in values[start:stop]]
+                start = stop
+
+        precursor_lb = self.precursor_mz - precursor_tol
+        precursor_ub = self.precursor_mz + precursor_tol
+        for mz, intensity, i in zip(self.mz, values, self.intensity):
+            if intensity > thresh:
+                if precursor_tol != 0.0:
+                    if mz > precursor_ub or mz < precursor_lb:
+                        processed_mz.append(mz)
+                        processed_intensity.append(i)
+                else:
+                    processed_mz.append(mz)
+                    processed_intensity.append(i)
+        
+        self.mz = processed_mz
+        self.intensity = processed_intensity
+
     def fast_sequest_intensity(self, max_mass = 2000, bo=0.68, bw=1.0005079):
         """Max-normalize to number of N evenly-spaced regions, pruning
         peaks which are >= 5% of maximum peak intensity

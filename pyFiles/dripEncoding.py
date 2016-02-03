@@ -25,7 +25,9 @@ class dripExtractParams(object):
                  spectra = '', charges = 'all',
                  mods = '', ntermMods = '', ctermMods = '',
                  highResMs2 = False, 
-                 dripLearnedMeans = 'dripLearned.means'):
+                 dripLearnedMeans = 'dripLearned.means',
+                 dripLearnedCovars = 'dripLearned.covars'):
+
         collection_dir = 'drip_collection'
         collection_name = 'drip_mz_Gaussians'
         mean_file = 'drip_mz.txt'
@@ -37,8 +39,8 @@ class dripExtractParams(object):
         mixture_name = 'mixture'
         dpmf_name = 'unityDPMF' 
         covar_name = 'covar0'
-        structure_file = 'model.str'
-        master_file = 'model.mtr'
+        structure_file = 'drip.str'
+        master_file = 'drip.mtr'
         max_obs_mass = 2001
 
         self.high_res_ms2 = highResMs2
@@ -49,13 +51,11 @@ class dripExtractParams(object):
         self.nterm_peptide_mods_spec = ntermMods
         self.cterm_peptide_mods_spec = ctermMods
 
-        self.output_dir = 'dripToolKit_psmCollection'
+        # self.output_dir = 'dtk_psmCollection'
+        self.output_dir = 'encode'
         self.obs_dir = 'obs'
         self.logDir = 'log'
-        if not highResMs2:
-            self.normalize = 'top300Sequest'
-        else:
-            self.normalize = 'top300TightSequest'
+        self.normalize = 'top300TightSequest'
         self.mz_lb = 0.0
         self.mz_ub = 2000.0
         self.append_to_pin = False
@@ -77,6 +77,7 @@ class dripExtractParams(object):
         self.master_file = master_file
         self.max_obs_mass = max_obs_mass
         self.learned_means = dripLearnedMeans
+        self.learned_covars = dripLearnedCovars
 
         # create obervation directories
         # vit vals output directory
@@ -110,7 +111,7 @@ class dripExtractParams(object):
 
 
 class dripGaussianCollectionNames(object):
-    """ used by dripToolKit
+    """ used by dripToolKit python interactive interpreter
     """
     def __init__(self, collection_dir = 'drip_collection', 
                  collection_name = 'drip_mz_Gaussians',
@@ -123,8 +124,8 @@ class dripGaussianCollectionNames(object):
                  mixture_name = 'mixture',
                  dpmf_name = 'unityDPMF', 
                  covar_name = 'covar0',
-                 structure_file = 'model.str',
-                 master_file = 'model.mtr',
+                 structure_file = 'drip.str',
+                 master_file = 'drip.mtr',
                  max_obs_mass = 2001):
         
         # create obervation directories

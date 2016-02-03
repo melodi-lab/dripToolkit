@@ -606,6 +606,11 @@ def top300Normalize(spectrum):
     spectrum.most_intense_n(300)
     spectrum.max_normalize()
 
+def top300TightNormalize(spectrum):
+    spectrum.most_intense_n(300)
+    spectrum.max_normalize()
+    spectrum.region_normalize_unnorm(10, 0, 2000, 0.05, precursor_tol = 1.5)
+
 def top200Normalize(spectrum):
     spectrum.most_intense_200()
     spectrum.max_normalize()

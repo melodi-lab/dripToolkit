@@ -134,24 +134,32 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
     ntermMods = df.parse_mods(ntermMods, False)
     ctermMods = df.parse_mods(ctermMods, False)
 
+    # initialize arguments for dripExtract
     args = dripExtractParams(psmFile, spectrumFile, 'all', 
                              mods, ntermMods, ctermMods, 
-                             highResMs2)
+                             highResMs2, 
+                             dripLearnedMeans, dripLearnedCovars)
 
     stde = open('gmtk_err', "w")
-    stdo = sys.stdout
-    # sys.stdout = open("dripToolKit_output", "w")
+    # stdo = sys.stdout
+    stdo = stde
 
-    t, d, spectra = runDripExtract(args, stdo, stde)
+    args.normalize = 'top300TightSequest'
+
+    t, d, spectra0 = runDripExtract(args, stdo, stde)
     
     spectra, minMz, maxMz, validCharges = load_spectra_minMaxMz(spectrumFile)
 
-    # todo: add top300StrictNormalize
-    normalize = 'top300Normalize'
-    preprocess = pipeline(normalize)
+    # get original intensity values to plot
+    for sid in spectra:
+        spectra[sid].mz = list(spectra0[sid].mz)
+        mz_vals = set(spectra0[sid].mz)
+        z = max(spectra0[sid].intensity)
+        spectra[sid].intensity = [i/z for mz, i in zip(spectra[sid].mz, spectra[sid].intensity)
+                                  if mz in mz_vals]
+
     for sid in spectra:
         s = spectra[sid]
-        preprocess(s)
 
     if not highResMs2:
         dripMeans = load_drip_means(dripLearnedMeans)
@@ -242,14 +250,16 @@ def psm(p, s0, c = 2, highResMs2 = False,
     ctermMods = df.parse_mods(ctermMods, False)
 
     # set observed spectrum preprocessing
-    normalize = 'top300Sequest'
+    normalize = 'top300TightSequest'
     preprocess = pipeline(normalize)
     preprocess(s)
 
-    normalize = 'top300Normalize'
-    preprocess = pipeline(normalize)
-    preprocess(s0)
-
+    # get original intensity values to plot
+    s0.mz = list(s.mz)
+    mz_vals = set(s.mz)
+    z = max(s0.intensity)    
+    s0.intensity = [i/z for mz, i in zip(s0.mz, s0.intensity)
+                                  if mz in mz_vals]
     num_psms = 1
 
     max_obs_mass = 2001
@@ -257,7 +267,8 @@ def psm(p, s0, c = 2, highResMs2 = False,
     # dirBase = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
     dirBase = 'dtk'
 
-    output_dir = os.path.abspath('dripEncode_' + dirBase)
+    # output_dir = os.path.abspath('dripEncode_' + dirBase)
+    output_dir = os.path.abspath('encode')
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
@@ -266,7 +277,8 @@ def psm(p, s0, c = 2, highResMs2 = False,
     if not os.path.exists(pfile_dir):
         os.mkdir(pfile_dir)
 
-    log_dir = os.path.abspath('dripLog_' + dirBase)
+    # log_dir = os.path.abspath('dripLog_' + dirBase)
+    log_dir = os.path.abspath('log')
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)
 
@@ -369,7 +381,7 @@ def psm(p, s0, c = 2, highResMs2 = False,
     vitStr0 = "gmtkViterbi -strFile " + args.structure_file \
         + " -triFile " + args.structure_file + ".trifile -ni1 0 -nf1 2 -ni2 1 -nf2 0" \
         + " -fdiffact2 rl" \
-        + " -inputMasterFile model.mtr -inputTrainableParameters trained.params -failOnZeroClique F"
+        + " -inputMasterFile " + args.master_file + " -inputTrainableParameters trained.params -failOnZeroClique F"
     # gmtkViterbi command line
     vitValsFile = os.path.join(log_dir, 'vitVals.txt')
     vitStr = vitStr0 + ' -vitValsFile ' +  vitValsFile \
