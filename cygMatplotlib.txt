@@ -1,0 +1,18 @@
+In the Cygwin setup (note, you can rerun setup to install/update
+additional packages), install:
+pkg-config
+ghostscript
+libfreetype-devel
+libpng-devel
+python-gtk2.0
+libgtk2.0-devel
+gcc-g++
+openbox
+python-numpy
+python-setuptools
+
+Restarting Cygwin, run:
+easy_install-2.7 https://github.com/matplotlib/matplotlib/archive/master.zip
+
+This may take some time to build.  To confirm matplotlib was built correctly, in python, type:
+import matplotlib

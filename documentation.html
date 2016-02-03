@@ -63,6 +63,12 @@ argparse and numpy python packages
 <a href="http://www.swig.org/download.html">SWIG</a>
 </li>
 
+<li>
+<b>Optional:</b> Matplotlib (if the plotting functionality,
+as described <a href="interactiveTools">here</a>, is
+desired; <a href="cygScipy.txt">Cygwin instructions to build matplotlib</a>)
+</li>
+
 <!-- <li> -->
 <!-- Autotools-dev -->
 <!-- </li> -->
@@ -96,7 +102,8 @@ requires the following steps (illustrated in the above flowchart):
 The following are optional for a database search:
 <ul>
   <li>For a low-resolution MS2 search and given a set of
-  high-confidence PSMs, DRIP model parameters may be trained prior to
+  high-confidence peptide-spectrum matches (PSMs), DRIP model
+  parameters may be trained prior to
   the search using dripTrain.py
   (detailed <a href="documentation.html#dripTrain">here</a>)
   <li>Prepare data to be searched by dripSearch on a compute cluster
@@ -611,7 +618,7 @@ where we assume each compute node has scratch space <code>/s0</code>.
 <p>Once all jobs have completed, all results will be written to local
   directory <log>.  To merge all results using dripSearch, we run
 <div class=code id="nav"><code>
-python dripSearch.py --merge-cluster-results True \<br>
+$ python dripSearch.py --merge-cluster-results True \<br>
 --output dripSearch-output
 </code>
 </div><br>
@@ -620,8 +627,139 @@ The output will then be written to <code>dripSearch-output.txt</code>
 </ol>
 </p>
 
-</div><!--end main-->
+<a name="interactiveTools"></a>
+<h1>Decoding and plotting DRIP PSMs in the python interactive
+  shell</h1>
+<p>The DRIP Toolkit module <code>dtk.py</code> allows the instantiation
+  of PSM objects, decoding of DRIP PSMs (i.e., calculating the
+  most-probable alignemnt via Viterbi decoding), and plotting of
+  decoded PSMs in the python interactive interpreter.</p>
 
+<p>In what follows, lines beginning with <code>>>></code> denote commands
+  entered in the python interactive shell.  When entering these
+  commands, do not enter the leading <code>>>></code>.</p>
+
+<p>
+Invoke the python interactive shell by typing in a
+terminal
+<div class=code id="nav"><code>
+$ python
+</code></div>
+</p>
+
+<p>
+As an example, we will decode PSMs for spectra
+  in <code>data/test.sm2</code>.  We first load the DTK module and the
+  spectra into memory:
+<div class=code id="nav"><code>
+>>> import dtk<br>
+>>> spectra = 'data/test.ms2'<br>
+>>> s = dtk.load_spectra(spectra)<br>
+</code></div>
+</p>
+
+<p><code>s</code> is now a dictionary of ms2 spectra whose keys are the
+each spectrum's scan number.  For this demonstration, we assume that
+  DRIP low-resolution MS2 parameters have been learned
+  using <code>dripTrain.py</code> and the learned means and variances
+  were specified in output files <code>dripLearned.means</code>
+  and <code>dripLearned.covars</code>, respectively.  For the
+  low-resolution MS2 spectrum whose scan number is <code>6028</code>,
+  we now define a charge 2 PSM of the generating
+  peptide <code>TGPSPQPESQGSFYQR</code> as
+<div class=code id="nav"><code>
+>>> charge = 2<br>
+>>> scan_number = 6028<br>
+>>> peptide = 'TGPSPQPESQGSFYQR'<br>
+>>> highRes = False<br>
+>>> p = dtk.psm(peptide, s[scan_number], charge, highRes, 'dripLearned.means', 'dripLearned.covars')<br>
+</code></div>
+</p>
+
+<p><code>p</code> is now a dripPSM object with several attributes
+  detailing the decoded PSM, summarized in the following table
+<table id="fileFormatsTable" border="1" width="50%">
+<tr>
+<td><code>p</code> attribute</td>
+<td>Meaning</td>
+</tr>
+
+<tr>
+<td>p.peptide</td>
+<td>peptide string</td>
+</tr>
+
+<tr>
+<td>p.spectrum</td>
+<td>observed spectrum, instance of spectrum object</td>
+</tr>
+
+<tr>
+<td>p.scan</td>
+<td>scan ID number</td>
+</tr>
+
+<tr>
+<td>p.num_ions</td>
+<td>number of unique b- and y-ions</td>
+</tr>
+
+<tr>
+<td>p.num_dels</td>
+<td>number of deletions</td>
+</tr>
+
+<tr>
+<td>p.num_frames</td>
+<td>number of observed peaks</td>
+</tr>
+
+<tr>
+<td>p.insertion_sequence</td>
+<td>decoded sequence of Booleans denoting whether the ith peak in the
+  observed spectrum is an insertion or not</td>
+</tr>
+
+</table>
+Note that, under the hood, <code>dtk.psm()</code> generates all
+necessary GMTK files, efficiently performs Viterbi inference using
+GMTK, and conveniently loads the Viterbi decoded information into
+memory.
+</p>
+
+<p>The <code>dtk.py</code> module provides functionality for
+  plotting decoded DRIP PSMs.  Assuming matplotlib is installed
+  (Cygwin users may consult the <a href="cygScipy.txt">following</a>
+  for matplotlib installation instructions), we may plot the most
+  probable alignment between the theoretical and observed spectra for
+  the previously instantiated PSM by entering
+<div class=code id="nav"><code>
+>>> vitPlot = 'scan%d-charge%d-peptide%s.png' % (scan_number, charge, peptide)<br>
+>>> p.plot_drip_viterbi(vitPlot)<br>
+</code></div>
+</p>
+
+<p>The above command will create the
+  figure <code>scan6028-charge2-peptideTGPSPQPESQGSFYQR.png</code> in
+  the current working directory.</p>
+
+<h2>Plotting all PSMs output by dripSearch</h2>
+<p>Given a dripSearch output
+  file <code>dripSearch-test-output.txt</code> and searched ms2
+  file <code>data/test.ms2</code>, the decoded PSMs may be plotted
+  all at once by running
+<div class=code id="nav"><code>
+>>> import dtk<br>
+>>> psms = 'dripSearch-test-output.txt'<br>
+>>> spectra = 'data/test.ms2'<br>
+>>> dtk.plot_psms(psms, spectra, 'currPsms.html')<br>
+</code></div>
+</p>
+
+<p>This will create several <code>.png</code> files, all which will
+  be listed in <code>currPsms.html</code> for easy browsing.</p>
+
+</div><!--end main-->
 <hr></hr>
 
 <a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
