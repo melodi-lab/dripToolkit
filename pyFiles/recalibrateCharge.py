@@ -19,11 +19,12 @@ import numpy
 def write_drip_recal(output_file, targets, decoys):
     print "Writing new ident file %s" % (output_file)
     outfile = open(output_file, "w")
-    outfile.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\n')
+    outfile.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\n')
+    # register keys
     keys = ['Kind', 'Scan', 'Score', 'Peptide', 'Obs_Inserts', 
             'Theo_Deletes', 'Obs_peaks_scored', 'Theo_peaks_used', 
             'Sum_obs_intensities', 'Sum_scored_mz_dist', 'Charge', 
-            'Flanking_nterm', 'Flanking_cterm']
+            'Flanking_nterm', 'Flanking_cterm', 'Protein_id']
     for t,d in zip(targets,decoys):
         for k in keys:
             if k=='Kind':
