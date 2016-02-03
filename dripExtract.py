@@ -350,7 +350,7 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
     else:
         target,decoy,num_psms = load_pin_file(args.psm_file)
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
-    sid_charge =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
+    sid_charges =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
     # sid_charges = list(set(list(target.iterkeys()) + list(decoy.iterkeys())))
 
     # assume that we should randomize PSMs for multithreading purposes; only reason

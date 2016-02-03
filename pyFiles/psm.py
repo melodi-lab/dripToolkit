@@ -110,7 +110,8 @@ class dripPSM(object):
     def __init__(self, sequence = '', score = float("-inf"), 
                  scan = -1, kind = 't', charge = 0, numBY = -1, 
                  fragments = [], insertions = [], usedFragments = {},
-                 flanking_nterm = '', flanking_cterm = '', var_mod_sequence = ''):
+                 flanking_nterm = '', flanking_cterm = '', var_mod_sequence = '',
+                 protein = -1):
         # we don't pass in the observed spectrum during initilization since we'll
         # likely be creating a PSM instance for all candidates per spectrum
         # Also, it makes sense to do this for the observed spectrum and not the 
@@ -132,9 +133,10 @@ class dripPSM(object):
         self.used_ions = usedFragments
         self.bions = {} # only used by dripToolKit
         self.yions = {} # only used by dripToolKit
-        self.flanking_nterm = flanking_nterm # currently only used by dripSearch
-        self.flanking_cterm = flanking_cterm # currently only used by dripSearch
+        self.flanking_nterm = flanking_nterm # used by dripSearch, dripExtract
+        self.flanking_cterm = flanking_cterm # used by dripSearch, dripExtract
         self.var_mod_sequence = var_mod_sequence # currently only used by dripSearch
+        self.protein = protein
 
         if len(self.insertion_sequence) != len(self.ion_sequence):
             raise ValueError('Sequence of fragments not equal to number of insertions')
@@ -651,6 +653,7 @@ def write_dripPSM_to_ident_var_mods(fid, psm, drip_means,
                               (11)Charge
                               (12)Flanking_nterm
                               (13)Flanking_ncterm
+                              (14)Protein_id
                     
     """
     num_ins, num_dels, num_non_ins, num_non_dels, sum_scored_intensities, sum_scored_mz_dists = psm.calculate_drip_features(drip_means)
@@ -698,19 +701,20 @@ def write_dripPSM_to_ident_var_mods(fid, psm, drip_means,
         #                                                                         psm.charge,
         #                                                                         psm.flanking_nterm,
         #                                                                         psm.flanking_cterm))
-        fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\n' % (psm.kind, 
-                                                                            psm.scan,
-                                                                            psm.score,
-                                                                            ''.join(pep_str),
-                                                                            num_ins,
-                                                                            num_dels,
-                                                                            num_non_ins, 
-                                                                            num_non_dels,
-                                                                            sum_scored_intensities,
-                                                                            sum_scored_mz_dists,
-                                                                            psm.charge,
-                                                                            psm.flanking_nterm,
-                                                                            psm.flanking_cterm))
+        fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\t%s\n' % (psm.kind, 
+                                                                                psm.scan,
+                                                                                psm.score,
+                                                                                ''.join(pep_str),
+                                                                                num_ins,
+                                                                                num_dels,
+                                                                                num_non_ins, 
+                                                                                num_non_dels,
+                                                                                sum_scored_intensities,
+                                                                                sum_scored_mz_dists,
+                                                                                psm.charge,
+                                                                                psm.flanking_nterm,
+                                                                                psm.flanking_cterm,
+                                                                                psm.kind + str(psm.protein)))
 
     except IOError:
         print "Could not write to ident stream, exitting"
@@ -755,6 +759,7 @@ def parse_drip_segments_binDb(s, filename, dripMeans,
     # (4) - amino acid flanking n-terminus
     # (5) - amino acid flanking c-terminus
     # (6) - string denoting variable modded amino acids
+    # (7) - integer denoting protein number
     pepDB = list(read_binary_peptide_tuples(s, pepLookUp))
     pepLookUp.close()
     
@@ -781,6 +786,7 @@ def parse_drip_segments_binDb(s, filename, dripMeans,
         curr_flanking_nterm = pepDB[curr_segment][4]
         curr_flanking_cterm = pepDB[curr_segment][5]
         curr_var_mod_sequence = pepDB[curr_segment][6]
+        curr_protein_id = pepDB[curr_segment][7]
             
         # calculate 
         curr_frames = int(match.group('frame'))
@@ -805,7 +811,8 @@ def parse_drip_segments_binDb(s, filename, dripMeans,
         currPsm = dripPSM(curr_pep_seq, curr_score,
                           sid, curr_kind, curr_charge, curr_numby,
                           fragments, ins_sequence, used_peaks,
-                          curr_flanking_nterm, curr_flanking_cterm, curr_var_mod_sequence)
+                          curr_flanking_nterm, curr_flanking_cterm, curr_var_mod_sequence,
+                          curr_protein_id)
         if(curr_kind=='t'):
             if curr_charge not in target_psms:
                 target_psms[curr_charge] = []
@@ -981,7 +988,8 @@ def parse_dripsearch_persidBin_generator(logDir, topMatch, highResMs2,
     # (5) - amino acid flanking n-terminus
     # (6) - amino acid flanking c-terminus
     # (7) - string denoting variable modded amino acids
-    s = struct.Struct('I %ds I I s s %ds' % (max_length, max_length))
+    # (8) - integer denoting protein number
+    s = struct.Struct('I %ds I I s s %ds I' % (max_length, max_length))
 
     # means are constant for low-res
     if not highResMs2:
@@ -1056,7 +1064,7 @@ def write_dripSearch_ident(output, logDir, topMatch,
         print "Could not open file %s for writing, exitting" % output
 
     # identFid.write('Kind\tScan\tFrames\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\n')
-    identFid.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\n')
+    identFid.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\n')
 
     for td, drip_means in parse_dripsearch_persidBin_generator(logDir, topMatch, 
                                                                highResMs2, spec_dict, meanFile,
@@ -1277,8 +1285,8 @@ def write_output(targets, decoys, filename, meanFile, spec_dict):
                 write_dripPSM_to_ident(identFid, psm, dripMeans)
     identFid.close()
 
-def write_percolator_pin(targets, decoys, filename, meanFile, spec_dict,
-                         cleavage_req, target_db, decoy_db):
+def write_percolator_pin_pepdb(targets, decoys, filename, meanFile, spec_dict,
+                               cleavage_req, target_db, decoy_db):
     """ Write PSMs and features to file
 
     Note: since this assumes a static set of means, this is not a general function for
@@ -1314,6 +1322,165 @@ def write_percolator_pin(targets, decoys, filename, meanFile, spec_dict,
     fields = ["SpecId","Label","ScanNr",
               "score","Mass","PepLen",
               "dm","absdM", "Insertions","Deletions", 
+              "NumObsPeaksScored", "NumTheoPeaksUsed",
+              "SumObsIntensities", "SumScoredMzDist",
+              "enzN", "enzC"]
+    for c in range(1,max_charge+1):
+        fields.append("Charge" + str(c))
+    fields += ["Peptide","Proteins"]    
+
+    for f in fields[:-1]:
+        identFid.write('%s\t' % f)
+    identFid.write('%s\n' % fields[-1])
+
+    left_of_cleavage = cleavage_req[0]
+    right_of_cleavage = cleavage_req[1]
+    print left_of_cleavage
+    print right_of_cleavage
+
+    for sid, charge in targets:
+        s = spec_dict[sid]
+        precursor_mass = {} # dict whose keys are precursor charge, entries are precursor mass
+        for c, m in s.charge_lines:
+            precursor_mass[c] = m
+        for psm in targets[sid,charge]:
+            # add spectrum to field of psm
+            psm.add_obs_spectrum(s)
+
+            # create one hot charge vector
+            one_hot_charge = {}
+            for c in range(1,max_charge+1):
+                c_key = 'Charge' + str(c)
+                if c == charge:
+                    one_hot_charge[c_key] = 1
+                else:
+                    one_hot_charge[c_key] = 0
+
+            # digestedPep class
+            try:
+                p = target_db[psm.peptide]
+            except KeyError:
+                print "Target PSM %s not in supplied target database, exitting" % psm.peptide
+                exit(-1)
+
+            # calculate dm
+            dm = p.peptideMass - precursor_mass[charge]
+            absDm = abs(dm)
+            pep_seq = psm.peptide
+            enzN = 0
+            enzC = 0
+            if p.ntermFlanking:
+                if (p.ntermFlanking in left_of_cleavage) and (pep_seq[0] in right_of_cleavage):
+                    enzN = 1
+            if p.ctermFlanking:
+                if (pep_seq[-1] in left_of_cleavage) and (p.ctermFlanking in right_of_cleavage):
+                    enzC = 1
+
+            # form peptide for output
+            if p.ntermFlanking:
+                peptide_str = p.ntermFlanking
+            else:
+                peptide_str = '-'
+            peptide_str += '.' + psm.peptide + '.'
+            if p.ctermFlanking:
+                peptide_str += p.ctermFlanking
+            else:
+                peptide_str += '-'
+
+            write_dripPSM_to_pin(identFid, psm, 
+                                 dripMeans, fields,
+                                 dm, absDm, p.peptideMass,
+                                 enzN, enzC,
+                                 peptide_str, p.proteinName,
+                                 one_hot_charge)
+        if (sid,charge) in decoys:
+            for psm in decoys[sid,charge]:
+                # add spectrum to field of psm
+                psm.add_obs_spectrum(s)
+
+                # create one hot charge vector
+                one_hot_charge = {}
+                for c in range(1,max_charge+1):
+                    c_key = 'Charge' + str(c)
+                    if c == charge:
+                        one_hot_charge[c_key] = 1
+                    else:
+                        one_hot_charge[c_key] = 0
+
+                # digestedPep class
+                try:
+                    p = decoy_db[psm.peptide]
+                except KeyError:
+                    print "Decoy PSM %s not in supplied decoy database, exitting" % psm.peptide
+                    exit(-1)
+
+                # calculate dm
+                dm = p.peptideMass - precursor_mass[charge]
+                absDm = abs(dm)
+                pep_seq = psm.peptide
+                enzN = 0
+                enzC = 0
+                if p.ntermFlanking:
+                    if (p.ntermFlanking in left_of_cleavage) and (pep_seq[0] in right_of_cleavage):
+                        enzN = 1
+                if p.ctermFlanking:
+                    if (pep_seq[-1] in left_of_cleavage)  and (p.ctermFlanking in right_of_cleavage):
+                        enzC = 1
+
+                if p.ntermFlanking:
+                    peptide_str = p.ntermFlanking
+                else:
+                    peptide_str = '-'
+                peptide_str += '.' + psm.peptide + '.'
+                if p.ctermFlanking:
+                    peptide_str += p.ctermFlanking
+                else:
+                    peptide_str += '-'
+
+                write_dripPSM_to_pin(identFid, psm, 
+                                     dripMeans, fields,
+                                     dm, absDm, p.peptideMass,
+                                     enzN, enzC,
+                                     peptide_str, p.proteinName,
+                                     one_hot_charge)
+    identFid.close()
+
+def write_percolator_pin(targets, decoys, filename, meanFile, spec_dict,
+                         cleavage_req, target_db, decoy_db):
+    """ Write PSMs and features to file
+
+    Note: since this assumes a static set of means, this is not a general function for
+    writing output files given a set of targets and decoys.  That is, if dripSearch was run in 
+    high-res mode, then there are several sets of means specific to each searched spectrum and these
+    are necessary to calculate the DRIP features.  Any other run of dripSearch and all runs of dripExtract
+    may use this function to write their output since the set of means does not change per spectrum.
+
+    Todo: we could get rid of this mean dependency, but we would need to recalculate each PSM's theoretical spectrum,
+    including all the theoretical spectrum preprocessing to get it right.  We could do this efficiently by only 
+    calculating these quantities (i.e., the DRIP features) for the top-match PSMs per spectrum.
+    """
+
+    dripMeans = load_drip_means(meanFile)
+
+    # fields = ["SpecId","Label","ScanNr","lnrSp","deltLCn","deltCn","score","Sp","IonFrac","Mass","PepLen","Charge1","Charge2","Charge3","enzN","enzC","enzInt","lnNumSP","dm","absdM", "insertions", "deletions", "peaksScoredA", "theoPeaksUsedA", "Peptide","Proteins"]
+
+    try:
+        identFid = open(filename, "w")
+    except IOError:
+        print "Could not open file %s for writing, exitting" % output
+
+    # find maximum PSM charge
+    max_charge = 0
+    for sid, charge in targets:
+        max_charge = max(max_charge,max([psm.charge for psm in targets[sid,charge]]))
+        if (sid,charge) in decoys:
+            max_charge = max(max_charge,max([psm.charge for psm in decoys[sid,charge]]))
+
+    assert max_charge > 0, "Maximum charge for encountered PSMs is zero, exitting"
+
+    # Create list of fields to write out
+    fields = ["SpecId","Label","ScanNr",
+              "score","Mass","PepLen","Insertions","Deletions", 
               "NumObsPeaksScored", "NumTheoPeaksUsed",
               "SumObsIntensities", "SumScoredMzDist",
               "enzN", "enzC"]

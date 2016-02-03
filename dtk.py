@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 #
-# Copyright 2015 <fill in later>
+# Written by John Halloran <halloj3@ee.washington.edu>
+#
+# Copyright (C) 2016 John Halloran
+# Licensed under the Open Software License version 3.0
+# See COPYING or http://opensource.org/licenses/OSL-3.0
 
 from __future__ import with_statement
 

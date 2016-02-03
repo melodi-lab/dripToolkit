@@ -483,6 +483,10 @@ def process_args(args):
         exit(-1)
 
     args.covar_file = os.path.join(os.path.abspath(args.collection_dir), args.covar_file)
+    args.mean_file = os.path.join(os.path.abspath(args.collection_dir), args.mean_file)
+    args.gauss_file = os.path.join(os.path.abspath(args.collection_dir), args.gauss_file)
+    args.mixture_file = os.path.join(os.path.abspath(args.collection_dir), args.mixture_file)
+    args.collection_file = os.path.join(os.path.abspath(args.collection_dir), args.collection_file)
 
     if not args.filter_ident:
         args.ident = ''
@@ -690,7 +694,8 @@ def make_drip_data_highres(args, data,
     # (5) - amino acid flanking n-terminus
     # (6) - amino acid flanking c-terminus
     # (7) - string denoting variable modded amino acids
-    s_bin = struct.Struct('I %ds I I s s %ds' % (args.max_length, args.max_length))
+    # (8) - integer denoting protein number
+    s_bin = struct.Struct('I %ds I I s s %ds I' % (args.max_length, args.max_length))
 
     for s in spectra:
         sid = s.spectrum_id
@@ -767,7 +772,7 @@ def make_drip_data_highres(args, data,
                                       peptide_pfile, True, len(bNy))
 
                 curr_db_pep = (pepType, tp[1], numBY_dict_per_sid[sid, theoSpecKey], charge,
-                               tp[3], tp[4], varModSequence)
+                               tp[3], tp[4], varModSequence, tp[2])
                 pepdb_list.write(s_bin.pack(*curr_db_pep))
                 # pepdb_list.write("t\t%s\t%d\t%d\t%c\t%c\t%s\n" % (p,
                 #                                                   numBY_dict_per_sid[sid, theoSpecKey], 
@@ -790,7 +795,7 @@ def make_drip_data_highres(args, data,
                                       pep_num, sid, args.max_obs_mass,
                                       peptide_pfile, False, len(bNy))
                 curr_db_pep = (pepType, dp[1], numBY_dict_per_sid[sid, theoSpecKey], charge,
-                               dp[3], dp[4], varModSequence)
+                               dp[3], dp[4], varModSequence, dp[2])
                 pepdb_list.write(s_bin.pack(*curr_db_pep))
                 # pepdb_list.write("d\t%s\t%d\t%d\t%c\t%c\t%s\n" % (d, 
                 #                                                   numBY_dict_per_sid[sid, theoSpecKey], 
@@ -816,7 +821,7 @@ def make_drip_data_highres(args, data,
                                           pep_num, sid, args.max_obs_mass,
                                           peptide_pfile, False, len(bNy))
                     curr_db_pep = (pepType, recal_dp[1], numBY_dict_per_sid[sid, theoSpecKey], charge,
-                                   recal_dp[3], recal_dp[4], varModSequence)
+                                   recal_dp[3], recal_dp[4], varModSequence, recal_dp[2])
                     pepdb_list.write(s_bin.pack(*curr_db_pep))
                     pep_num += 1
 
@@ -892,7 +897,8 @@ def make_drip_data_lowres(args, data,
     # (5) - amino acid flanking n-terminus
     # (6) - amino acid flanking c-terminus
     # (7) - string denoting variable modded amino acids
-    s_bin = struct.Struct('I %ds I I s s %ds' % (args.max_length, args.max_length))
+    # (8) - integer denoting protein number
+    s_bin = struct.Struct('I %ds I I s s %ds I' % (args.max_length, args.max_length))
 
     sids = []
     validcharges = args.charges
@@ -980,7 +986,7 @@ def make_drip_data_lowres(args, data,
                 # numBY for DRIP features assumed all b-/y-ions, not just those
                 # unfiltered per spectrum
                 curr_db_pep = (pepType, tp[1], len(bNy), charge,
-                               tp[3], tp[4], varModSequence)
+                               tp[3], tp[4], varModSequence, tp[2])
                 pepdb_list.write(s_bin.pack(*curr_db_pep))
                 # pepdb_list.write("t\t%s\t%d\t%d\t%c\t%c\t%s\n" % (p,
                 #                                                   len(bNy), 
@@ -1013,7 +1019,7 @@ def make_drip_data_lowres(args, data,
                 # numBY for DRIP features assumed all b-/y-ions, not just those
                 # unfiltered per spectrum
                 curr_db_pep = (pepType, dp[1], len(bNy), charge,
-                               dp[3], dp[4], varModSequence)
+                               dp[3], dp[4], varModSequence, dp[2])
                 pepdb_list.write(s_bin.pack(*curr_db_pep))
 
                 # pepdb_list.write("d\t%s\t%d\t%d\t%c\t%c\t%s\n" % (d,
@@ -1050,7 +1056,7 @@ def make_drip_data_lowres(args, data,
                     # numBY for DRIP features assumed all b-/y-ions, not just those
                     # unfiltered per spectrum
                     curr_db_pep = (pepType, recal_dp[1], len(bNy), charge,
-                                   recal_dp[3], recal_dp[4], varModSequence)
+                                   recal_dp[3], recal_dp[4], varModSequence, recal_dp[2])
                     pepdb_list.write(s_bin.pack(*curr_db_pep))
 
                     if args.filt_theo_peaks:
