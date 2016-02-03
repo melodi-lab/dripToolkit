@@ -404,7 +404,11 @@ $ python dripSearch.py \<br>
   is performed.  <b>Setting this value to nonzero values</b>, such
   as <code>100</code> or <code>75</code>, <b>may be used to speed up
   search time</b>, though small values will significantly degrade search
-  results (single digit values should be avoided at all costs).</td>
+  results (single digit values should be avoided at all costs).
+  The beam pruning width specifies the number of most-probable
+  hypotheses in a particular frame which are not filtered (this method
+  of approximate inference is often called histogram pruning, and
+  specified as <code>ckbeam</code> in GMTK).</td>
 </tr>
 
 <tr>
