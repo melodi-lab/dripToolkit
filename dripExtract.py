@@ -290,7 +290,7 @@ def make_drip_data_highres(args, spectra, stdo, stde):
             bNy = [ion_dict[bOrY] for bOrY in bNy]
             drip_peptide_sentence(pep_dt, pep, bNy, 
                                   pep_num, s.spectrum_id, args.max_obs_mass,
-                                  peptide_pfile, True, len(bNy))
+                                  peptide_pfile, True, len(bNy)-1)
             drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
             pepdb_list.write("t\t%d\t%s\t%d\t%d\n" % (sid, 
                                                       pep, 
@@ -305,7 +305,7 @@ def make_drip_data_highres(args, spectra, stdo, stde):
                 bNy = [ion_dict[bOrY] for bOrY in bNy]
                 drip_peptide_sentence(pep_dt, pep, bNy, 
                                       pep_num, s.spectrum_id, args.max_obs_mass,
-                                      peptide_pfile, False, len(bNy))
+                                      peptide_pfile, False, len(bNy)-1)
                 drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
                 pepdb_list.write("d\t%d\t%s\t%d\t%d\n" % (sid, 
                                                           pep, 
@@ -409,7 +409,7 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
                                                     minMz, maxMz)
                 drip_peptide_sentence(pep_dt, pep, bNy, 
                                       pep_num, s.spectrum_id, args.max_obs_mass,
-                                      peptide_pfile, True, len(bNy))
+                                      peptide_pfile, True, len(bNy)-1)
                 drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
                 pep_num += 1
 
@@ -426,7 +426,7 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
                                              minMz, maxMz)
                 drip_peptide_sentence(pep_dt, pep, bNy, 
                                       pep_num, s.spectrum_id, args.max_obs_mass,
-                                      peptide_pfile, False, len(bNy))
+                                      peptide_pfile, False, len(bNy)-1)
                 drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
                 pep_num += 1
 

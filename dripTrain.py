@@ -19,7 +19,7 @@ import pyFiles.digest_fasta as df
 import multiprocessing
 import shlex
 import math
-import pyFiles.psm as psm
+from pyFiles.psm import dripPSM, parse_dripExtract
 
 from pyFiles.gmtkUtils import parse_params
 from random import shuffle
@@ -58,8 +58,10 @@ from pyFiles.shard_spectra import (calc_minMaxMz,
                                    load_target_decoy_db_no_reshuffle)
 from subprocess import call, check_output, STDOUT
 
-debug=0
+debug=1
 
+bw = 1.0005079
+bo = 0.68
 ########## would have to rework all code to use below, but this would make working with the DRIP means
 ########## considerably simpler.  However, mean class is overkill as the means are scalars
 def load_dripMeansClass(master_file):
@@ -198,6 +200,7 @@ def remove_theoretical_holes(dripMeans, usedTheoPeaks):
     """
     
     meanKeys = list(dripMeans.iterkeys())
+    # print sorted(list(set(meanKeys).difference(set(usedTheoPeaks))))
     for m in meanKeys:
         if m not in usedTheoPeaks:
             hole = dripMeans.pop(m, None)
@@ -230,7 +233,7 @@ def remap_mean_indices(args, spectra,
 
     # spec_considered = set([])
     for sid,charge,pep in theo_dict:
-        s = spectra[sid]
+        # s = spectra[sid]
         # if sid not in spec_considered:
         #     preprocess(s)
         #     spec_considered.add(sid)
@@ -241,7 +244,8 @@ def remap_mean_indices(args, spectra,
 
 def inject_mean_evidence(args, spectra,
                          dripMeans,
-                         fa_psms, theo_dict, lowProbMeans):
+                         fa_psms, theo_dict, lowProbMeans,
+                         observedHoles):
     """ Remap theoretical peaks to indices under collection of
         non-theoretical-holes
 
@@ -268,33 +272,83 @@ def inject_mean_evidence(args, spectra,
         new_theo_index_mapping[old_ind] = new_ind
         new_to_old_mapping[new_ind] = old_ind
 
-    remapped_lowProbMeans = set([new_theo_index_mapping[m] for m in lowProbMeans])
+    remapped_lowProbMeans = set([new_theo_index_mapping[m] for m in observedHoles])
+    remapped_lowProbMeans |= set([new_theo_index_mapping[m] for m in lowProbMeans])
+    # remapped_lowProbMeans = set([new_theo_index_mapping[m] for m in lowProbMeans])
 
     for sid,charge,pep in theo_dict:
         dripPsm = []
-        ind = 0
+        ind = -1
         for psm in fa_psms[sid,charge]:
+            ind += 1
             if psm.peptide == pep:
                 dripPsm = psm
                 break
-            ind += 1
         assert dripPsm
 
         bNy = set(theo_dict[sid,charge,pep])
+        bNy_original = [new_to_old_mapping[theoPeak] for theoPeak in theo_dict[sid,charge,pep]]
         overlap = bNy & remapped_lowProbMeans
         if overlap:
             s = spectra[sid]
-            temp_spec = [(mz, intensity, ins) for mz, intensity, ins in zip(s.mz, s.intensity, dripPsm.insertion_sequence)]
+            temp_spec = [(mz, intensity) for mz, intensity in zip(s.real_mz, s.real_intensity)]
             for m in overlap:
-                temp_spec.append((dripMeans[new_to_old_mapping[m]],1.0, 0))
+                k = new_to_old_mapping[m]
+                synthetic_mz = (bw*float(2*k+1)-2*bo)/2
+                temp_spec.append((synthetic_mz,1.0))
             temp_spec.sort(key = lambda r: r[0])
-            s.mz = [mz for mz, intensity, ins in temp_spec]
-            s.intensity = [intensity for mz, intensity, ins in temp_spec]
-            dripPsm.insertion_sequence = [ins for mz, intensity, ins in temp_spec]
+            s.mz = [mz for mz, _ in temp_spec]
+            s.intensity = [intensity for _, intensity in temp_spec]
+            dripPsm.insertion_sequence = [0 if calc_bin(mz,bo,bw) in bNy_original else 1 for mz in s.mz]
             dripPsm.add_obs_spectrum(s)
 
             spectra[sid] = s
             fa_psms[sid,charge][ind] = dripPsm
+
+    # # create dictionary of charges with sid keys
+    # sidChargeDict = {}
+    # pepDict = {}
+    # for sid, charge, pep in theo_dict:
+    #     if sid in sidChargeDict:
+    #         sidChargeDict[sid].append(charge)
+    #     else:
+    #         sidChargeDict[sid] = [charge]
+
+    #     if (sid,charge) not in pepDict:
+    #         pepDict[sid,charge] = [pep]
+    #     else:
+    #         pepDict[sid,charge].append(pep)
+
+    # # add synthetic peaks to observed spectrum holes,
+    # # estimate forced alignment
+    # for sid in sidChargeDict:
+    #     s = spectra[sid]
+    #     # temp_spec = [(mz, intensity) for mz, intensity in zip(s.mz, s.intensity)]
+    #     temp_spec = [(mz, intensity) for mz, intensity in zip(s.real_mz, s.real_intensity)]
+    #     synthetic_peak_locations = set([])
+    #     for charge in sidChargeDict[sid]:
+    #         for pep in pepDict[sid,charge]:
+    #             bNy = theo_dict[sid,charge,pep]
+    #             synthetic_peak_locations |= set(bNy).intersection(remapped_lowProbMeans)
+    #     for mz in synthetic_peak_locations:
+    #         # synthetic_mz = dripMeans[new_to_old_mapping[mz]]
+    #         synthetic_mz = (bw*float(2*mz+1)-2*bo)/2
+
+    #         temp_spec.append((synthetic_mz, 1.0))
+
+    #     temp_spec.sort(key = lambda r: r[0])
+
+    #     s.mz = [mz for mz, intensity in temp_spec]
+    #     s.intensity = [intensity for mz, intensity in temp_spec]
+
+    #     curr_ins_seq = [False if calc_bin(mz,bo,bw) in bNy else True for mz in s.mz]
+    #     # update forced alignment estimate
+    #     for charge in sidChargeDict[sid]:
+    #         for i in range(len(fa_psms[sid,charge])):
+    #             pep = fa_psms[sid,charge][i].peptide
+    #             bNy = theo_dict[sid,charge,pep]
+    #             curr_ins_seq = [False if calc_bin(mz,bo,bw) in bNy else True for mz in s.mz]
+    #             fa_psms[sid,charge][i].insertion_sequence = curr_ins_seq
 
 def remap_learned_means(dripMeans_og, learnedMeans):
     """ Remap theoretical peaks to indices under collection of
@@ -367,7 +421,13 @@ def write_learned_means_covars(learnedMeans, learnedCovars, meanName, covarName)
                                              covar[2][0]))
     covarFid.close()
 
-def calculate_theoretical_dictionary(args, spectra):
+def calc_bin(mz, bin_offset = 0.68, bin_width = 1.0005079, ma = False):
+    if ma:
+        return int(math.floor((mz+bin_offset)/bin_width))
+    else:
+        return int(math.floor(mz/bin_width-bin_offset+1))
+
+def calcTheoDict_estimateFa(args, spectra):
     """Dictionary of theoretical spectra for each training PSM
 
        don't run this for high-res; theoretical spectrum
@@ -399,33 +459,91 @@ def calculate_theoretical_dictionary(args, spectra):
     if(args.normalize != 'filter0'):
         preprocess = pipeline(args.normalize)
 
+    max_mass = 2001
+    not_observed_holes = [0] * max_mass
+
+    observedPeaks = set([])
+
+    minMz = 0
+    maxMz = max_mass-1
+
     spec_considered = set([])
     for sid, charge in sid_charges:
         s = spectra[sid]
         if sid not in spec_considered:
             preprocess(s)
             spec_considered.add(sid)
+            s.real_mz = list(s.mz)
+            s.real_intensity = list(s.intensity)
+
+            spectra[sid] = s
+
         for p in target[sid,charge]:
             pep = p.peptide
             # calculate theoretical spectra
             bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods,
                                              ntermMods, ctermMods)
-            # calculate upper and lower bounds to filter theoretical peaks 
-            # out of observed spectra range
-            if args.filt_theo_peaks:
-                if args.per_spectrum_mz_bound:
-                    minMz = s.mz[0]
-                    maxMz = s.mz[-1]
-                else:
-                    minMz = args.mz_lb
-                    maxMz = args.mz_ub
+            # calculate complement of observed holes
+
+            observedPeaks |= set([calc_bin(mz, bo, bw) for mz in s.mz])
             if args.filt_theo_peaks:
                 filter_theoretical_peaks(bNy, minMz, maxMz)
             theo_dict[sid,charge,pep] = bNy
             # update set of active theoretical peaks
             usedTheoPeaks |= set(bNy)
 
-    return theo_dict, usedTheoPeaks, target, num_psms
+    observedHoles = usedTheoPeaks.difference(observedPeaks)
+
+    # create dictionary of charges with sid keys
+    sidChargeDict = {}
+    for sid, charge in sid_charges:
+        if sid in sidChargeDict:
+            sidChargeDict[sid].append(charge)
+        else:
+            sidChargeDict[sid] = [charge]
+    
+    # add synthetic peaks to observed spectrum holes,
+    # estimate forced alignment
+    for sid in sidChargeDict:            
+        s = spectra[sid]
+        temp_spec = [(mz, intensity) for mz, intensity in zip(s.mz, s.intensity)]
+        synthetic_peak_locations = set([])
+        for charge in sidChargeDict[sid]:
+            for p in target[sid,charge]:
+                pep = p.peptide
+                bNy = theo_dict[sid,charge,pep]
+                synthetic_peak_locations |= set(bNy).intersection(observedHoles)
+        for mz in synthetic_peak_locations:
+            synthetic_mz = (bw*float(2*mz+1)-2*bo)/2
+            # synthetic_mz = float(mz)/2
+            # synthetic_mz = dripMeans[new_to_old_mapping[mz]]
+            temp_spec.append((synthetic_mz, 1.0))
+
+        temp_spec.sort(key = lambda r: r[0])
+
+        s.mz = [mz for mz, _ in temp_spec]
+        s.intensity = [intensity for _, intensity in temp_spec]
+        spectra[sid] = s
+
+    fa_psms = {}
+    # iteratre through new m/z values, estimate forced alignment
+    for sid in sidChargeDict:
+        s = spectra[sid]
+        for charge in sidChargeDict[sid]:
+            for p in target[sid,charge]:
+                pep = p.peptide
+                bNy = set(theo_dict[sid,charge,pep])
+                curr_ins_seq = [False if calc_bin(mz,bo,bw) in bNy else True for mz in s.mz]
+                
+                currPsm = dripPSM(pep, 0.0, sid, 't', 
+                                  charge, len(bNy), [100] * len(curr_ins_seq),
+                                  curr_ins_seq)
+                if (sid, charge) in fa_psms:
+                    fa_psms[sid,charge].append(currPsm)
+                else:
+                    fa_psms[sid,charge] = [currPsm]
+
+    return theo_dict, usedTheoPeaks, target, num_psms, observedHoles, fa_psms
 
 def make_fa_data_highres(args, spectra, target, num_psms, stdo, stde):
     """Generate test data .pfile. and create job scripts for cluster use (if num_jobs > 1).
@@ -477,7 +595,7 @@ def make_fa_data_highres(args, spectra, target, num_psms, stdo, stde):
     # construct ion_dict
     for sid in spectra:
         s = spectra[sid]
-        preprocess(s)
+        # preprocess(s)
         for charge in validcharges:
             if (s.spectrum_id, charge) not in target:
                 continue
@@ -558,7 +676,7 @@ def make_fa_data_highres(args, spectra, target, num_psms, stdo, stde):
             bNy = [ion_dict[bOrY] for bOrY in bNy]
             drip_peptide_sentence(pep_dt, pep, bNy, 
                                   pep_num, s.spectrum_id, args.max_obs_mass,
-                                  peptide_pfile, True, len(bNy))
+                                  peptide_pfile, True, len(bNy)-1)
             drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
             pepdb_list.write("t\t%d\t%s\t%d\t%d\n" % (sid, 
                                                       pep, 
@@ -573,7 +691,7 @@ def make_fa_data_highres(args, spectra, target, num_psms, stdo, stde):
                 bNy = [ion_dict[bOrY] for bOrY in bNy]
                 drip_peptide_sentence(pep_dt, pep, bNy, 
                                       pep_num, s.spectrum_id, args.max_obs_mass,
-                                      peptide_pfile, False, len(bNy))
+                                      peptide_pfile, False, len(bNy)-1)
                 drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
                 pepdb_list.write("d\t%d\t%s\t%d\t%d\n" % (sid, 
                                                           pep, 
@@ -631,7 +749,7 @@ def make_fa_data_lowres(args, spectra, dripMeans, theo_dict,
             pepdb_list.write("t\t%d\t%s\t%d\t%d\n" % (sid, pep, len(bNy), charge))
             drip_peptide_sentence(pep_dt, pep, bNy, 
                                   pep_num, s.spectrum_id, args.max_obs_mass,
-                                  peptide_pfile, True, len(bNy))
+                                  peptide_pfile, True, len(bNy)-1)
             drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
             pep_num += 1
     # close streams for this spectrum
@@ -714,16 +832,16 @@ def make_training_data_highres(args, spectra,
             pep = p.peptide
             # look for corresponding dripPSM
             dripPsm = []
-            for psm in training_psms[sid,charge]:
-                if psm.peptide == pep:
-                    dripPsm = psm
+            for t_psm in training_psms[sid,charge]:
+                if t_psm.peptide == pep:
+                    dripPsm = t_psm
                     break
             assert dripPsm
 
             bNy = theo_spec_dict[s.spectrum_id, pep]
             drip_peptide_sentence(pep_dt, pep, bNy, 
                                   pep_num, s.spectrum_id, args.max_obs_mass,
-                                  peptide_pfile, True, len(bNy))
+                                  peptide_pfile, True, len(bNy)-1)
             training_spectrum_sentence(spectrum_pfile, s.mz, s.intensity, dripPsm)
             pep_num += 1
 
@@ -772,6 +890,8 @@ def make_training_data_lowres(args, spectra, dripMeans, theo_dict,
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
     sid_charges = list(target.iterkeys())
 
+    sid_charges.sort(key = lambda r: r[0])
+
     # # assume that we should randomize PSMs for multithreading purposes; only reason
     # # why we are currently assuming this is that there is already a parameter for dripSearch
     # # which signifies whether we should shuffle the data
@@ -795,14 +915,14 @@ def make_training_data_lowres(args, spectra, dripMeans, theo_dict,
             bNy = theo_dict[sid,charge,pep]
             # look for corresponding dripPSM
             dripPsm = []
-            for psm in fa_psms[sid,charge]:
-                if psm.peptide == pep:
-                    dripPsm = psm
+            for t_psm in fa_psms[sid,charge]:
+                if t_psm.peptide == pep:
+                    dripPsm = t_psm
                     break
             assert dripPsm
             drip_peptide_sentence(pep_dt, pep, bNy, 
                                   pep_num, s.spectrum_id, args.max_obs_mass,
-                                  peptide_pfile, True, len(bNy))
+                                  peptide_pfile, True, len(bNy)-1)
             training_spectrum_sentence(spectrum_pfile, s.mz, s.intensity,
                                        dripPsm)
             pep_num += 1
@@ -819,12 +939,14 @@ def calculateForcedAlignment(args, spectra, dripMeans, theo_dict,
                              hq_psms, num_psms, stde, stdo):
     """ Run Viterbi to compute a forced alignment, i.e., most probable
         sequence of insertions which are used as observations during 
-        training.  This greatly decreases overall training time
-        and makes sure that "junk" (too many hypotheses that consist of 
-        random matches) do not influence the learned parameters.  Indeed,
-        the number of junk hypotheses is much larger than the number of 
-        "useful" hypotheses (hypotheses where true peak matches are 
-        considered).
+        training for boot model.  
+        Boot model is directly analogous to a speech boot model, which
+        acts to regularize learned parameters, greatly decreases overall 
+        training time and makes sure that "junk" (too many hypotheses 
+        that consist of random matches) do not influence the learned 
+        parameters.  Indeed, the number of junk hypotheses is much 
+        larger than the number of "useful" hypotheses (hypotheses 
+        where true peak matches are considered).
     """
     # create constant gmtkViterbi command line string
     # don't need frame/segment difference actions since each PSM corresponds to a specific spectrum, 
@@ -890,7 +1012,7 @@ def calculateForcedAlignment(args, spectra, dripMeans, theo_dict,
         + ' -cppCommand ' + cppCommand
     call(shlex.split(vitStr), stdout = stdo, stderr = stde)
 
-    t,d = psm.parse_dripExtract(vitValsFile, os.path.join(args.output_dir, 'pepDB.txt'))
+    t,_ = parse_dripExtract(vitValsFile, os.path.join(args.output_dir, 'pepDB.txt'))
     return t
     # if not args.high_res_ms2:
     #     return t
@@ -914,7 +1036,7 @@ def runDripTrain(args, spectra, dripMeans, theo_dict,
     # create structure and master files then triangulate
     try:
         create_drip_structure(args.high_res_ms2, args.structure_file, 
-                              args.max_obs_mass, True)
+                              args.max_obs_mass, True, True)
     except:
         print "Could not create DRIP structure file %s, exitting" % args.structure_file
         exit(-1)
@@ -1018,7 +1140,8 @@ if __name__ == '__main__':
     parser.add_argument("--max_obs_mass", type = int, default = 2001)
     parser.add_argument('--normalize',  type = str, action = 'store',
                         help = "Name of the spectrum preprocessing pipeline.", 
-                        default = 'top300TightSequest')
+                        default = 'top300Sequest')
+                        # default = 'top300TightSequest')
     help_filt_theo_peaks = "Filter theoretical peaks outside of observed spectra min and max"
     parser.add_argument('--filt_theo_peaks', action = 'store_false', dest = 'filt_theo_peaks', 
                         default = True, help = help_filt_theo_peaks)
@@ -1081,14 +1204,18 @@ if __name__ == '__main__':
     # process input arguments
     process_args(args)
 
-    # set stdout and stderr for subprocess
-    if debug:
-        stdo = sys.stdout
-    else:
-        stdo = open(os.devnull, "w")
-        # stdo = sys.stdout
-        stde = stdo
-        sys.stdout = open("dripTrain_output", "w")
+    stdo = sys.stdout
+    stde = stdo
+    # # set stdout and stderr for subprocess
+    # if debug:
+    #     # stdo = sys.stdout
+    #     stdo = open(os.devnull, "w")
+    #     stde = stdo
+    # else:
+    #     stdo = open(os.devnull, "w")
+    #     # stdo = sys.stdout
+    #     stde = stdo
+    #     sys.stdout = open("dripTrain_output", "w")
 
     # currently ignore ident file input for spectra filtering
     spectra, minMz, maxMz, validcharges, sidChargePreMass = load_spectra_ret_dict(args.spectra, 'all')
@@ -1098,9 +1225,17 @@ if __name__ == '__main__':
     args.mz_lb = minMz
     args.mz_ub = maxMz
 
+    print args.covar_file
+    try:
+        write_covar_file(args.high_res_ms2, args.covar_file, '', False)
+    except:
+        print "Could not create covariance file %s, exitting" % args.covar_file
+        exit(-1)
+
     if not args.high_res_ms2:
         # compute collection of theoretical spectra
-        theo_dict, usedTheoPeaks, hq_psms, num_psms = calculate_theoretical_dictionary(args, spectra)
+        # theo_dict, usedTheoPeaks, hq_psms, num_psms, observedHoles = calculate_theoretical_dictionary(args, spectra)
+        theo_dict, usedTheoPeaks, hq_psms, num_psms, observedHoles, fa_psms = calcTheoDict_estimateFa(args, spectra)
 
         # load drip means
         # load prior learned means
@@ -1123,20 +1258,14 @@ if __name__ == '__main__':
     else:
         dripMeans = []
         theo_dict = []
-        hq_psms,num_psms = load_psm_library(args.psm_library)        
+        observedHoles = []
+        hq_psms,num_psms = load_psm_library(args.psm_library)
+        # compute forced alignment
+        stde = open('dripTrain_fa', "w")
+        fa_psms = calculateForcedAlignment(args, spectra, dripMeans, theo_dict, 
+                                           hq_psms, num_psms, stdo, stde)
+        stde.close()
 
-    print args.covar_file
-    try:
-        write_covar_file(args.high_res_ms2, args.covar_file)
-    except:
-        print "Could not create covariance file %s, exitting" % args.covar_file
-        exit(-1)
-
-    # compute forced alignment
-    stde = open('dripTrain_fa', "w")
-    fa_psms = calculateForcedAlignment(args, spectra, dripMeans, theo_dict, 
-                                       hq_psms, num_psms, stdo, stde)
-    stde.close()
     # after call to calculateForcedAlignment, should be no difference betweent running
     # lowres and high-res (from the perspective of all means being loaded into memory
     # with the same data-type
@@ -1147,7 +1276,7 @@ if __name__ == '__main__':
 
     meanPat = 'WARNING: Mean vec \'mean(?P<meanNum>\d+)\''
 
-    stde = open('dripTrain', "w")
+    # stde = open('dripTrain', "w")
 
     # run one iteration of EM to see whether we must inject 
     # synthetic peaks
@@ -1159,11 +1288,22 @@ if __name__ == '__main__':
     for meanNum in re.findall(meanPat, k):
         lowProbMeans.append(int(meanNum))
 
-    while lowProbMeans:
+    # if debug:
+    #     new_theo_index_mapping = {}
+    #     new_to_old_mapping = {}
+    #     for new_ind, old_ind in enumerate(sorted(dripMeans.iterkeys())):
+    #         new_theo_index_mapping[old_ind] = new_ind
+    #         new_to_old_mapping[new_ind] = old_ind
+
+    #     for m in lowProbMeans:
+    #         print new_theo_index_mapping[m]
+
+    while lowProbMeans:        
         print "%d means without enough evidence, adding synthetic peaks" % len(lowProbMeans)
         inject_mean_evidence(args, spectra,
                              dripMeans,
-                             fa_psms, theo_dict, lowProbMeans)
+                             fa_psms, theo_dict, lowProbMeans,
+                             observedHoles)
 
         k = runDripTrain(args, spectra, dripMeans, theo_dict,
                          hq_psms, num_psms, fa_psms, stdo, stde,
@@ -1175,8 +1315,6 @@ if __name__ == '__main__':
     k = runDripTrain(args, spectra, dripMeans, theo_dict,
                      hq_psms, num_psms, fa_psms, stdo, stde,
                      100)
-    stde.close()
-
     if debug:
         print k
 

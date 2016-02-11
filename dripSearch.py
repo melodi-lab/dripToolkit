@@ -769,7 +769,7 @@ def make_drip_data_highres(args, data,
                 bNy = [ion_dict[bOrY] for bOrY in bNy]
                 drip_peptide_sentence(pep_dt, theoSpecKey, bNy, 
                                       pep_num, sid, args.max_obs_mass,
-                                      peptide_pfile, True, len(bNy))
+                                      peptide_pfile, True, len(bNy)-1)
 
                 curr_db_pep = (pepType, tp[1], numBY_dict_per_sid[sid, theoSpecKey], charge,
                                tp[3], tp[4], varModSequence, tp[2])
@@ -793,7 +793,7 @@ def make_drip_data_highres(args, data,
                 bNy = [ion_dict[bOrY] for bOrY in bNy]
                 drip_peptide_sentence(pep_dt, theoSpecKey, bNy, 
                                       pep_num, sid, args.max_obs_mass,
-                                      peptide_pfile, False, len(bNy))
+                                      peptide_pfile, False, len(bNy)-1)
                 curr_db_pep = (pepType, dp[1], numBY_dict_per_sid[sid, theoSpecKey], charge,
                                dp[3], dp[4], varModSequence, dp[2])
                 pepdb_list.write(s_bin.pack(*curr_db_pep))
@@ -819,7 +819,7 @@ def make_drip_data_highres(args, data,
                     bNy = [ion_dict[bOrY] for bOrY in bNy]
                     drip_peptide_sentence(pep_dt, theoSpecKey, bNy, 
                                           pep_num, sid, args.max_obs_mass,
-                                          peptide_pfile, False, len(bNy))
+                                          peptide_pfile, False, len(bNy)-1)
                     curr_db_pep = (pepType, recal_dp[1], numBY_dict_per_sid[sid, theoSpecKey], charge,
                                    recal_dp[3], recal_dp[4], varModSequence, recal_dp[2])
                     pepdb_list.write(s_bin.pack(*curr_db_pep))
@@ -998,7 +998,7 @@ def make_drip_data_lowres(args, data,
                                                     minMz, maxMz)
                 drip_peptide_sentence(pep_dt, theoSpecKey, bNy, 
                                       pep_num, s.spectrum_id, args.max_obs_mass,
-                                      peptide_pfile, True, len(bNy))
+                                      peptide_pfile, True, len(bNy)-1)
                 pep_num += 1
 
             for dp in dl:
@@ -1032,7 +1032,7 @@ def make_drip_data_lowres(args, data,
                                                     minMz, maxMz)
                 drip_peptide_sentence(pep_dt, theoSpecKey, bNy, 
                                       pep_num, s.spectrum_id, args.max_obs_mass,
-                                      peptide_pfile, False, len(bNy))
+                                      peptide_pfile, False, len(bNy)-1)
                 # write observation file
                 # drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
                 pep_num += 1
@@ -1064,7 +1064,7 @@ def make_drip_data_lowres(args, data,
                                                         minMz, maxMz)
                     drip_peptide_sentence(pep_dt, theoSpecKey, bNy, 
                                           pep_num, s.spectrum_id, args.max_obs_mass,
-                                          peptide_pfile, False, len(bNy))
+                                          peptide_pfile, False, len(bNy)-1)
                 # write observation file
                 # drip_spectrum_sentence(spectrum_pfile, s.mz, s.intensity)
                     pep_num += 1
