@@ -58,7 +58,7 @@ from pyFiles.shard_spectra import (calc_minMaxMz,
                                    load_target_decoy_db_no_reshuffle)
 from subprocess import call, check_output, STDOUT
 
-debug=1
+debug=0
 
 bw = 1.0005079
 bo = 0.68
@@ -233,13 +233,8 @@ def remap_mean_indices(args, spectra,
 
     # spec_considered = set([])
     for sid,charge,pep in theo_dict:
-        # s = spectra[sid]
-        # if sid not in spec_considered:
-        #     preprocess(s)
-        #     spec_considered.add(sid)
         # calculate b- and y-ions under new mapping
         bNy = theo_dict[sid,charge,pep]
-        # bNy = [new_theo_index_mapping[i] for i in bNy]
         theo_dict[sid,charge,pep] = [new_theo_index_mapping[i] for i in bNy]
 
 def inject_mean_evidence(args, spectra,
@@ -305,51 +300,6 @@ def inject_mean_evidence(args, spectra,
             spectra[sid] = s
             fa_psms[sid,charge][ind] = dripPsm
 
-    # # create dictionary of charges with sid keys
-    # sidChargeDict = {}
-    # pepDict = {}
-    # for sid, charge, pep in theo_dict:
-    #     if sid in sidChargeDict:
-    #         sidChargeDict[sid].append(charge)
-    #     else:
-    #         sidChargeDict[sid] = [charge]
-
-    #     if (sid,charge) not in pepDict:
-    #         pepDict[sid,charge] = [pep]
-    #     else:
-    #         pepDict[sid,charge].append(pep)
-
-    # # add synthetic peaks to observed spectrum holes,
-    # # estimate forced alignment
-    # for sid in sidChargeDict:
-    #     s = spectra[sid]
-    #     # temp_spec = [(mz, intensity) for mz, intensity in zip(s.mz, s.intensity)]
-    #     temp_spec = [(mz, intensity) for mz, intensity in zip(s.real_mz, s.real_intensity)]
-    #     synthetic_peak_locations = set([])
-    #     for charge in sidChargeDict[sid]:
-    #         for pep in pepDict[sid,charge]:
-    #             bNy = theo_dict[sid,charge,pep]
-    #             synthetic_peak_locations |= set(bNy).intersection(remapped_lowProbMeans)
-    #     for mz in synthetic_peak_locations:
-    #         # synthetic_mz = dripMeans[new_to_old_mapping[mz]]
-    #         synthetic_mz = (bw*float(2*mz+1)-2*bo)/2
-
-    #         temp_spec.append((synthetic_mz, 1.0))
-
-    #     temp_spec.sort(key = lambda r: r[0])
-
-    #     s.mz = [mz for mz, intensity in temp_spec]
-    #     s.intensity = [intensity for mz, intensity in temp_spec]
-
-    #     curr_ins_seq = [False if calc_bin(mz,bo,bw) in bNy else True for mz in s.mz]
-    #     # update forced alignment estimate
-    #     for charge in sidChargeDict[sid]:
-    #         for i in range(len(fa_psms[sid,charge])):
-    #             pep = fa_psms[sid,charge][i].peptide
-    #             bNy = theo_dict[sid,charge,pep]
-    #             curr_ins_seq = [False if calc_bin(mz,bo,bw) in bNy else True for mz in s.mz]
-    #             fa_psms[sid,charge][i].insertion_sequence = curr_ins_seq
-
 def remap_learned_means(dripMeans_og, learnedMeans):
     """ Remap theoretical peaks to indices under collection of
         non-theoretical-holes
@@ -405,12 +355,6 @@ def write_learned_means_covars(learnedMeans, learnedCovars, meanName, covarName)
     for i,m in enumerate(resortedMeans):
         meanFid.write("%d mean%d 1 %.10e\n" % (i,i,m))
     meanFid.close()
-    # # write mean file
-    # meanFid = open(meanName, 'w')
-    # meanFid.write("%d\n" % len(learnedMeans))
-    # for m in sorted(learnedMeans.iterkeys()):
-    #     meanFid.write("%d mean%d 1 %f\n" % (m,m,learnedMeans[m]))
-    # meanFid.close()
 
     # write covar file
     covarFid = open(covarName, 'w')
@@ -421,11 +365,11 @@ def write_learned_means_covars(learnedMeans, learnedCovars, meanName, covarName)
                                              covar[2][0]))
     covarFid.close()
 
-def calc_bin(mz, bin_offset = 0.68, bin_width = 1.0005079, ma = False):
-    if ma:
-        return int(math.floor((mz+bin_offset)/bin_width))
-    else:
-        return int(math.floor(mz/bin_width-bin_offset+1))
+def calc_bin(mz, bin_offset = 0.68, bin_width = 1.0005079):
+    """ Used to estimate forced alignment for training, as well
+        as observed holes.  Both used for training regularization        
+    """
+    return int(math.floor(mz/bin_width-bin_offset+1))
 
 def calcTheoDict_estimateFa(args, spectra):
     """Dictionary of theoretical spectra for each training PSM
@@ -1204,18 +1148,14 @@ if __name__ == '__main__':
     # process input arguments
     process_args(args)
 
-    stdo = sys.stdout
-    stde = stdo
-    # # set stdout and stderr for subprocess
-    # if debug:
-    #     # stdo = sys.stdout
-    #     stdo = open(os.devnull, "w")
-    #     stde = stdo
-    # else:
-    #     stdo = open(os.devnull, "w")
-    #     # stdo = sys.stdout
-    #     stde = stdo
-    #     sys.stdout = open("dripTrain_output", "w")
+    # set stdout and stderr for subprocess
+    if debug:
+        stdo = sys.stdout
+        stde = stdo
+    else:
+        stdo = open(os.devnull, "w")
+        stde = stdo
+        sys.stdout = open("dripTrain_output", "w")
 
     # currently ignore ident file input for spectra filtering
     spectra, minMz, maxMz, validcharges, sidChargePreMass = load_spectra_ret_dict(args.spectra, 'all')
@@ -1255,16 +1195,20 @@ if __name__ == '__main__':
         # and remap theoretical peaks to space of active theoretical peaks
         remap_mean_indices(args, spectra,
                            dripMeans, usedTheoPeaks, theo_dict)
-    else:
+    else: # note: learning high-res parameters currently not supported, just exit for now
+        print "Attempting to train high-resolution MS2 DRIP model, not currently supported.  Exitting"
+        exit(-1)
+        
+        # stuff below
         dripMeans = []
         theo_dict = []
         observedHoles = []
         hq_psms,num_psms = load_psm_library(args.psm_library)
         # compute forced alignment
-        stde = open('dripTrain_fa', "w")
+        stde_fa = open('dripTrain_fa', "w")
         fa_psms = calculateForcedAlignment(args, spectra, dripMeans, theo_dict, 
-                                           hq_psms, num_psms, stdo, stde)
-        stde.close()
+                                           hq_psms, num_psms, stdo, stde_fa)
+        stde_fa.close()
 
     # after call to calculateForcedAlignment, should be no difference betweent running
     # lowres and high-res (from the perspective of all means being loaded into memory
@@ -1287,16 +1231,6 @@ if __name__ == '__main__':
     lowProbMeans = []
     for meanNum in re.findall(meanPat, k):
         lowProbMeans.append(int(meanNum))
-
-    # if debug:
-    #     new_theo_index_mapping = {}
-    #     new_to_old_mapping = {}
-    #     for new_ind, old_ind in enumerate(sorted(dripMeans.iterkeys())):
-    #         new_theo_index_mapping[old_ind] = new_ind
-    #         new_to_old_mapping[new_ind] = old_ind
-
-    #     for m in lowProbMeans:
-    #         print new_theo_index_mapping[m]
 
     while lowProbMeans:        
         print "%d means without enough evidence, adding synthetic peaks" % len(lowProbMeans)
