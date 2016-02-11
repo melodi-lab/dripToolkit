@@ -365,6 +365,129 @@ def write_learned_means_covars(learnedMeans, learnedCovars, meanName, covarName)
                                              covar[2][0]))
     covarFid.close()
 
+def inject_mean_evidence_old(args, spectra,
+                             dripMeans,
+                             fa_psms, theo_dict, lowProbMeans):
+    """ Remap theoretical peaks to indices under collection of
+        non-theoretical-holes
+
+        todo: add high-res ms2 to this, even though learning
+              high-res ms2 parameters hasn't lead to any 
+              improvements
+
+        pre:
+            -drip means have been loaded into dripMeans and
+            theoretical holes have been removed
+            -non-theoretical-holes have been properly denoted
+            in the set usedTheoPeaks
+            -dictionary of theoretical spectra have been constructed
+            but have not been remapped under the collection of 
+            active theoretical peaks
+        post:
+             -each theoretical peak in theo_dict is an index
+             into array of drip means sorted by key in dripMeans
+
+       Note: replaced as of 2016-02-11, but may prove useful
+             in future work
+    """
+
+    new_theo_index_mapping = {}
+    new_to_old_mapping = {}
+    for new_ind, old_ind in enumerate(sorted(dripMeans.iterkeys())):
+        new_theo_index_mapping[old_ind] = new_ind
+        new_to_old_mapping[new_ind] = old_ind
+
+    remapped_lowProbMeans = set([new_theo_index_mapping[m] for m in lowProbMeans])
+
+    for sid,charge,pep in theo_dict:
+        dripPsm = []
+        ind = 0
+        for psm in fa_psms[sid,charge]:
+            if psm.peptide == pep:
+                dripPsm = psm
+                break
+            ind += 1
+        assert dripPsm
+
+        bNy = set(theo_dict[sid,charge,pep])
+        overlap = bNy & remapped_lowProbMeans
+        if overlap:
+            s = spectra[sid]
+            temp_spec = [(mz, intensity, ins) for mz, intensity, ins in zip(s.mz, s.intensity, dripPsm.insertion_sequence)]
+            for m in overlap:
+                temp_spec.append((dripMeans[new_to_old_mapping[m]],1.0, 0))
+            temp_spec.sort(key = lambda r: r[0])
+            s.mz = [mz for mz, intensity, ins in temp_spec]
+            s.intensity = [intensity for mz, intensity, ins in temp_spec]
+            dripPsm.insertion_sequence = [ins for mz, intensity, ins in temp_spec]
+            dripPsm.add_obs_spectrum(s)
+
+            spectra[sid] = s
+            fa_psms[sid,charge][ind] = dripPsm
+
+def calculate_theoretical_dictionary(args, spectra):
+    """Dictionary of theoretical spectra for each training PSM
+
+       don't run this for high-res; theoretical spectrum
+       preprocessing is explicitly handled in high-res data
+       generation
+
+       Note: not used as of 2016-02-11, but may prove useful
+             in future work
+    """
+
+    assert not args.high_res_ms2, "calculate_theoretical_dictionary shouldn't be called in high-res ms2 mode"
+
+    # parse modifications
+    mods = df.parse_mods(args.mods_spec, True)
+    print "mods:"
+    print mods
+    ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
+    print "n-term mods:"
+    print ntermMods
+    ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
+    print "c-term mods:"
+    print ctermMods
+
+    target,num_psms = load_psm_library(args.psm_library)
+    sid_charges = list(target.iterkeys())
+
+    theo_dict = {} # keys: sid, charge, peptide string
+    usedTheoPeaks = set([])
+    validcharges = args.charges # this should have been updated by loading
+                                # the spectra into memory first
+
+    if(args.normalize != 'filter0'):
+        preprocess = pipeline(args.normalize)
+
+    spec_considered = set([])
+    for sid, charge in sid_charges:
+        s = spectra[sid]
+        if sid not in spec_considered:
+            preprocess(s)
+            spec_considered.add(sid)
+        for p in target[sid,charge]:
+            pep = p.peptide
+            # calculate theoretical spectra
+            bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods,
+                                             ntermMods, ctermMods)
+            # calculate upper and lower bounds to filter theoretical peaks 
+            # out of observed spectra range
+            if args.filt_theo_peaks:
+                if args.per_spectrum_mz_bound:
+                    minMz = s.mz[0]
+                    maxMz = s.mz[-1]
+                else:
+                    minMz = args.mz_lb
+                    maxMz = args.mz_ub
+            if args.filt_theo_peaks:
+                filter_theoretical_peaks(bNy, minMz, maxMz)
+            theo_dict[sid,charge,pep] = bNy
+            # update set of active theoretical peaks
+            usedTheoPeaks |= set(bNy)
+
+    return theo_dict, usedTheoPeaks, target, num_psms
+
 def calc_bin(mz, bin_offset = 0.68, bin_width = 1.0005079):
     """ Used to estimate forced alignment for training, as well
         as observed holes.  Both used for training regularization        
@@ -459,8 +582,6 @@ def calcTheoDict_estimateFa(args, spectra):
                 synthetic_peak_locations |= set(bNy).intersection(observedHoles)
         for mz in synthetic_peak_locations:
             synthetic_mz = (bw*float(2*mz+1)-2*bo)/2
-            # synthetic_mz = float(mz)/2
-            # synthetic_mz = dripMeans[new_to_old_mapping[mz]]
             temp_spec.append((synthetic_mz, 1.0))
 
         temp_spec.sort(key = lambda r: r[0])
@@ -1174,7 +1295,6 @@ if __name__ == '__main__':
 
     if not args.high_res_ms2:
         # compute collection of theoretical spectra
-        # theo_dict, usedTheoPeaks, hq_psms, num_psms, observedHoles = calculate_theoretical_dictionary(args, spectra)
         theo_dict, usedTheoPeaks, hq_psms, num_psms, observedHoles, fa_psms = calcTheoDict_estimateFa(args, spectra)
 
         # load drip means
