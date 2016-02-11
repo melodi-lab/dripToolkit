@@ -852,52 +852,52 @@ def interleave_b_y_ions(peptide, charge,
         Vector of interleaved b and y ions
 
     """
-    (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic', mass_op)
-    ntm_fragments = []
-    ctm_fragments = []
-    ntm_charges = []
-    ctm_charges = []
-    bNy = []
-    for c in range(1,charge):
-        ntm_fragments += [int(round(float(b+c)/float(c))) for b in ntm[1:-1]]
-        ctm_fragments += [int(round(float(y+18+c)/float(c))) for y in ctm[1:-1]]
-            # vector of charges
-        bNy += [c for b in ntm[1:-1]]
-        bNy += [c for y in ctm[1:-1]]
-
-    return sorted(list(set(bNy)))
-
-    # (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic')
+    # (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic', mass_op)
+    # ntm_fragments = []
+    # ctm_fragments = []
+    # ntm_charges = []
+    # ctm_charges = []
     # bNy = []
-    # ntermOffset = 0
-    # ctermOffset = 0
-
-    # p = peptide.seq
-    # # check n-/c-term amino acids for modifications
-    # if p[0] in ntermMods:
-    #     ntermOffset = ntermMods[p[0]]
-    # if p[-1] in ctermMods:
-    #     ctermOffset = ctermMods[p[0]]
-
-    # for c in range(1,max(charge,2)):
-    #     cf = float(c)
-    #     bOffset = cf*mass_h
-    #     offset = ntermOffset
-    #     for b, aa in zip(ntm[1:-1], peptide.seq[:-1]):
-    #         if aa in mods:
-    #             offset += mods[aa]
-    #         bNy.append((b+offset+bOffset)/cf)
-
-    # for c in range(1,max(charge,2)):
-    #     cf = float(c)
-    #     yOffset = mass_h2o + cf*mass_h
-    #     offset = ctermOffset
-    #     for y, aa in zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:])):
-    #         if aa in mods:
-    #             offset += mods[aa]
-    #         bNy.append((y+offset+yOffset)/cf)
+    # for c in range(1,charge):
+    #     ntm_fragments += [int(round(float(b+c)/float(c))) for b in ntm[1:-1]]
+    #     ctm_fragments += [int(round(float(y+18+c)/float(c))) for y in ctm[1:-1]]
+    #         # vector of charges
+    #     bNy += [c for b in ntm[1:-1]]
+    #     bNy += [c for y in ctm[1:-1]]
 
     # return sorted(list(set(bNy)))
+
+    (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic')
+    bNy = []
+    ntermOffset = 0
+    ctermOffset = 0
+
+    p = peptide.seq
+    # check n-/c-term amino acids for modifications
+    if p[0] in ntermMods:
+        ntermOffset = ntermMods[p[0]]
+    if p[-1] in ctermMods:
+        ctermOffset = ctermMods[p[0]]
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        bOffset = cf*mass_h
+        offset = ntermOffset
+        for b, aa in zip(ntm[1:-1], peptide.seq[:-1]):
+            if aa in mods:
+                offset += mods[aa]
+            bNy.append((b+offset+bOffset)/cf)
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        yOffset = mass_h2o + cf*mass_h
+        offset = ctermOffset
+        for y, aa in zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:])):
+            if aa in mods:
+                offset += mods[aa]
+            bNy.append((y+offset+yOffset)/cf)
+
+    return sorted(list(set(bNy)))
 
 def interleave_b_y_ions_var_mods(peptide, charge, 
                                  mods = {}, ntermMods = {}, ctermMods = {},
