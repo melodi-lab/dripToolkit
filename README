@@ -1,11 +1,11 @@
-The DRIP ToolKit utilizes a dynamic Bayesian network (DBN) 
+The DRIP Toolkit utilizes a dynamic Bayesian network (DBN) 
 for Rapid Identification of Peptides (DRIP) in tandem mass spectra.  
 Given an observed spectrum, DRIP scores a peptide by aligning the 
 peptide's theoretical spectrum and the observed spectrum, i.e., 
 computing the most probable sequence of insertions (spurious 
 observed peaks) and deletions (missing theoretical peaks).  
 DBN inference is efficiently performed utilizing the Graphical Models 
-ToolKit (GMTK), which allows easy alterations to the model. If you use 
+Toolkit (GMTK), which allows easy alterations to the model. If you use 
 the DRIP toolkit in your research, please cite:
 
 John T. Halloran, Jeff A. Bilmes, and William S. Noble. "Learning 
@@ -22,7 +22,7 @@ Ajit Singh (ajit@ee.washington.edu) and Jeff Bilmes (bilmes@ee.washington.edu)
 The toolkit requires the following be installed:
 Cygwin (if using Windows)
 g++
-the Graphical Models ToolKit (GMTK) - https://melodi.ee.washington.edu/gmtk/
+the Graphical Models Toolkit (GMTK) - https://melodi.ee.washington.edu/gmtk/
 Python 2.7
 argparse and numpy python packages
 SWIG
@@ -32,7 +32,7 @@ cd pyFiles/pfile
 swig -c++ -python libpfile.i
 CC=g++ python setup.py build_ext -i
 
-Assuming no errors were output, the DRIP ToolKit 
+Assuming no errors were output, the DRIP Toolkit 
 is now ready for use!  To test that the above was
 compiled and linked correctly, run:
 ./test.py
@@ -41,7 +41,7 @@ compiled and linked correctly, run:
 ----------------- Searching ms2 files
 ---------------------------------------------------
 For convenience, sample data is included in directory data and
-example DRIP ToolKit search commands are provided in test.sh.
+example DRIP Toolkit search commands are provided in test.sh.
 
 To search an MS2 dataset data/test.ms2 given FASTA file data/yeast.fasta, perform the following steps:
 1.) Digest the FASTA file using dripDigest.py.  Example:
