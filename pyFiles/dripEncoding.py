@@ -528,7 +528,7 @@ def write_covar_file(highRes = False, covarFile = 'covar.txt',
     lrMzCovar = "1.5625000000e-02"
 
     if riptidePrior:
-        intensityCovar = "0.0872357562"
+        intensityCovar = "8.7238661945e-02"
     else:
         intensityCovar = "0.12"
 
@@ -545,12 +545,14 @@ def write_covar_file(highRes = False, covarFile = 'covar.txt',
                     found = True
             if not found:
                 if riptidePrior:
-                    intensityCovar = "0.0872357562"
+                    intensityCovar = "8.7238661945e-02"
+                    # intensityCovar = "0.0872357562"
                 else:
                     intensityCovar = "0.12"
         except:
             if riptidePrior:
-                intensityCovar = "0.0872357562"
+                intensityCovar = "8.7238661945e-02"
+                # intensityCovar = "0.0872357562"
             else:
                 intensityCovar = "0.12"
     try:
