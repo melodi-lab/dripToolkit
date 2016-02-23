@@ -17,6 +17,10 @@ from dripBootParameters import init_strictOrbitrapRiptide_learned_means, writeCP
 from pyFiles.constants import allPeps, mass_h, mass_h2o
 from subprocess import call, check_output
 
+def gaussPdf(x, mu, sig):
+    Z = (2*math.pi*sig)**.5
+    return math.exp(-(x-mu)**2/(2*sig)) / Z
+
 ############## 
 class dripExtractParams(object):
     """ used by dripToolKit to plot PSMs for a collection
@@ -328,7 +332,8 @@ def create_drip_constants():
 
 def create_drip_structure(highRes = False, strFile = "model.str", 
                           maxTermMass = "200002", forcedAlignment = False, 
-                          training = False):
+                          training = False,
+                          highResMzWidth = 0.1):
     writeCPTs()
     create_drip_constants()
     if not training:
@@ -346,8 +351,16 @@ def create_drip_structure(highRes = False, strFile = "model.str",
         intensityObs = "1"
         insertionObs = "2"
         peakLengthObs = "3"
-    hrPenalty = "-4.5369118985307910"
-    lrPenalty = "-6.831884549495013"
+
+    # default insertion penalties
+    hrPenalty = -4.5369118985307910
+    lrPenalty = -6.831884549495013
+
+    # compute high-resolution insertion penalty
+    if highRes:
+        sig = (highResMzWidth / 8.0) ** 2 # 99.9 percent of Gaussian mass, i.e., 8 standard deviations, lies within highResMzWidth
+        mu = highResMzWidth / 2.0
+        hrPenalty = math.log(gaussPdf(0.0, mu, sig))
 
     try:
         fid = open(strFile, "w")
@@ -462,9 +475,9 @@ def create_drip_structure(highRes = False, strFile = "model.str",
 """
 
     if highRes:
-        frameString += "	      | penalty %s;\n" % hrPenalty
+        frameString += "	      | penalty %.16f;\n" % hrPenalty
     else:
-        frameString += "	      | penalty %s;\n" % lrPenalty
+        frameString += "	      | penalty %.16f;\n" % lrPenalty
 
     frameString += """      switchingparents: INSERTION(0) using mapping("internal:copyParent");
       conditionalparents: FRAGMENT_MASS(0) using mixture collection("drip_mz_Gaussians") mapping("internal:copyParent")
@@ -523,9 +536,13 @@ def triangulate_drip(strFile = "model.str", mtrFile = "model.mtr"):
     #      stdout = stdo, stderr = stde)
 
 def write_covar_file(highRes = False, covarFile = 'covar.txt', 
-                     learnedCovars = '', riptidePrior = True):
-    hrMzCovar = "1.5625000000e-04"
-    lrMzCovar = "1.5625000000e-02"
+                     learnedCovars = '', riptidePrior = True,
+                     highResMzWidth = 0.1):
+    hrMzCovar = 1.5625000000e-04
+    lrMzCovar = 1.5625000000e-02
+
+    if highRes:
+        hrMzCovar = (highResMzWidth / 8.0) ** 2 # 99.9 percent of Gaussian mass, i.e., 8 standard deviations, lies within highResMzWidth
 
     if riptidePrior:
         intensityCovar = "8.7238661945e-02"
@@ -563,9 +580,9 @@ def write_covar_file(highRes = False, covarFile = 'covar.txt',
         
     fid.write("2\n0\n")
     if highRes:
-        fid.write("covar0 1 %s\n" % hrMzCovar)
+        fid.write("covar0 1 %e\n" % hrMzCovar)
     else:
-        fid.write("covar0 1 %s\n" % lrMzCovar)
+        fid.write("covar0 1 %e\n" % lrMzCovar)
 
     fid.write("1\ncovar_intensity 1 %s" % intensityCovar)
 
