@@ -150,6 +150,13 @@ def process_args(args):
     args.high_res_ms2 = df.check_arg_trueFalse(args.high_res_ms2)
     args.randomize_ms2_spectra = df.check_arg_trueFalse(args.randomize_ms2_spectra)
 
+    args.precursor_filter = check_arg_trueFalse(args.precursor_filter)
+
+    if args.precursor_filter:
+        args.normalize = 'top300TightSequest'
+    else:
+        args.normalize = 'top300Sequest'
+
     # args.decoys = df.check_arg_trueFalse(args.decoys)
     # args.load_peptide_database_file = df.check_arg_trueFalse(args.load_peptide_database_file)
     # check precursor mass type
@@ -473,7 +480,8 @@ def runDripExtract(args, stdo, stde):
     # create structure and master files then triangulate
     try:
         create_drip_structure(args.high_res_ms2, args.structure_file, 
-                              args.max_obs_mass)
+                              args.max_obs_mass, False, False,
+                              args.high_res_gauss_dist)
     except:
         print "Could not create DRIP structure file %s, exitting" % args.structure_file
         exit(-1)
@@ -498,7 +506,8 @@ def runDripExtract(args, stdo, stde):
 
     try:
         write_covar_file(args.high_res_ms2, args.covar_file,
-                         args.learned_covars)
+                         args.learned_covars, True,
+                         args.high_res_gauss_dist)
     except:
         print "Could not create covariance file %s, exitting" % args.covar_file
         exit(-1)
@@ -563,19 +572,16 @@ if __name__ == '__main__':
                             help = help_pepdb)
     ############## search parameters
     searchParamsGroup = parser.add_argument_group('searchParamsGroup', 'Search parameter options.')
-    # help_precursor_window = """<float> - Tolerance used for matching peptides to spectra.  Peptides must be within +/-'precursor-window' of the spectrum value. The precursor window units depend upon precursor-window-type. Default=3."""
-    # searchParamsGroup.add_argument('--precursor-window', type = float, action = 'store', default = 3.0, help = help_precursor_window)
-    # help_precursor_window_type = """<Da|ppm> - Specify the units for the window that is used to select peptides around the precursor mass location, either in Daltons (Da) or parts-per-million (ppm). Default=Da."""
-    # searchParamsGroup.add_argument('--precursor-window-type', type = str, action = 'store', default = 'Da', help = help_precursor_window_type)
     help_scan_id_list = """<string> - A file containing a list of scan IDs to search.  Default = <empty>."""
     searchParamsGroup.add_argument('--scan-id-list', type = str, action = 'store', default = '', help = help_scan_id_list)
     help_charges = """<comma-separated-integers|all> - precursor charges to search. To specify individual charges, list as comma-separated, e.g., 1,2,3 to search all charge 1, 2, or 3 spectra. Default=All."""
     searchParamsGroup.add_argument('--charges', type = str, action = 'store', default = 'All', help = help_charges)
     help_high_res_ms2 = """<T|F> - boolean, whether the search is over high-res ms2 (high-high) spectra. When this parameter is true, DRIP used the real valued masses of candidate peptides as its Gaussian means. For low-res ms2 (low-low or high-low), the observed m/z measures are much less accurate so these Gaussian means are learned using training data (see dripTrain). Default=False."""
     searchParamsGroup.add_argument('--high-res-ms2', type = str, action = 'store', default = 'false', help = help_high_res_ms2)
-    # help_decoys = '<T|F> - whether to create (shuffle target peptides) and search decoy peptides. Default = True'
-    # searchParamsGroup.add_argument('--decoys', type = str, action = 'store', 
-    #                                default = 'True', help = help_decoys)
+    help_high_res_gauss_dist = """<float> - m/z distance for 99.9% of m/z Gaussian mass to lie within.  Only available for high-res MS2 searches. Default=0.05."""
+    searchParamsGroup.add_argument('--high-res-gauss-dist', type = float, action = 'store', default = 0.05, help = help_high_res_gauss_dist)
+    help_precursor_filter = """<T|F> - boolean, when true, filter all peaks 1.5Da from the observed precursor mass. Default=False."""
+    searchParamsGroup.add_argument('--precursor-filter', type = str, action = 'store', default = 'false', help = help_precursor_filter)
     help_num_threads = '<integer> - the number of threads to run on a multithreaded CPU. If supplied value is greater than number of supported threads, defaults to the maximum number of supported threads minus one. Multithreading is not suppored for cluster use as this is typically handled by the cluster job manager. Default=1.'
     searchParamsGroup.add_argument('--num-threads', type = int, action = 'store', 
                                    default = 1, help = help_num_threads)
@@ -601,15 +607,9 @@ if __name__ == '__main__':
     max_mass_help = """<float> - The maximum mass (in Da) of peptides to consider. Default = 7200."""
     peptidePropertiesGroup.add_argument('--max-mass', type = float, action = 'store',
                                         default = 7200.0, help = max_mass_help)
-    # min_length_help = """<integer> - The minimum length of peptides to consider. Default = 6."""
-    # peptidePropertiesGroup.add_argument('--min-length', type = int, action = 'store',
-    #                                     default = 6, help = min_length_help)
     min_mass_help = """<float> - The minimum mass (in Da) of peptides to consider. Default = 7200."""
     peptidePropertiesGroup.add_argument('--min-mass', type = float, action = 'store',
                                         default = 200.0, help = min_mass_help)
-    # monoisotopic_precursor_help = """<T|F> - When computing the mass of a peptide, use monoisotopic masses rather than average masses. Default = true."""
-    # peptidePropertiesGroup.add_argument('--monoisotopic-precursor', type = str, action = 'store', 
-    #                                     default = 'True', help = monoisotopic_precursor_help)
     ############## amino acid modifications
     aaModsGroup = parser.add_argument_group('aaModsGroup', 'Options for amino acid modifications.')
     aaModsGroup.add_argument('--mods-spec', type = str, action = 'store',
@@ -633,17 +633,6 @@ if __name__ == '__main__':
     help_seed = '<seed> - When given a unsigned integer value seeds the random number generator with that value. When given the string "time" seeds the random number generator with the system time. Default = 1.'
     decoyDBGroup.add_argument('--seed', type = str, action = 'store', 
                               default = '1', help = help_seed)
-    # ############ enzymatic digestion
-    # enzymeDigestGroup = parser.add_argument_group('enzymeDigestGroup', 'Options for the digesting enzyme.')
-    # enzyme_help = """"<no-enzyme|trypsin|trypsin/p|chymotrypsin|elastase|clostripain|cyanogen-bromide|iodosobenzoate|proline-endopeptidase|staph-protease|asp-n|lys-c|lys-n|arg-c|glu-c|pepsin-a|elastase-trypsin-chymotrypsin|custom-enzyme> - Specify the enzyme used to digest the proteins in silico. Available enzymes (with the corresponding digestion rules indicated in parentheses) include no-enzyme ([X]|[X]), trypsin ([RK]|{P}), trypsin/p ([RK]|[]), chymotrypsin ([FWYL]|{P}), elastase ([ALIV]|{P}), clostripain ([R]|[]), cyanogen-bromide ([M]|[]), iodosobenzoate ([W]|[]), proline-endopeptidase ([P]|[]), staph-protease ([E]|[]), asp-n ([]|[D]), lys-c ([K]|{P}), lys-n ([]|[K]), arg-c ([R]|{P}), glu-c ([DE]|{P}), pepsin-a ([FL]|{P}), elastase-trypsin-chymotrypsin ([ALIVKRWFY]|{P}). Specifying --enzyme no-enzyme yields a non-enzymatic digest. Warning: the resulting peptide database may be quite large. Default = trypsin."""
-    # enzymeDigestGroup.add_argument('--enzyme', type = str, action = 'store',
-    #                                default = 'trypsin', help = enzyme_help)
-    # custom_enzyme_help = """<string> - Specify rules for in silico digestion of protein sequences. Overrides the enzyme option. Two lists of residues are given enclosed in square brackets or curly braces and separated by a |. The first list contains residues required/prohibited before the cleavage site and the second list is residues after the cleavage site. If the residues are required for digestion, they are in square brackets, '[' and ']'. If the residues prevent digestion, then they are enclosed in curly braces, '{' and '}'. Use X to indicate all residues. For example, trypsin cuts after R or K but not before P which is represented as [RK]|{P}. AspN cuts after any residue but only before D which is represented as [X]|[D]. Default = <empty>."""
-    # enzymeDigestGroup.add_argument('--custom-enzyme', type = str, action = 'store',
-    #                                default = '', help = custom_enzyme_help)
-    # missed_cleavages_help = """<integer> - Maximum number of missed cleavages per peptide to allow in enzymatic digestion. Default = 0."""
-    # enzymeDigestGroup.add_argument('--missed-cleavages', type = int, action = 'store',
-    #                                default = 0, help = custom_enzyme_help)
     ############ shard spectra options
     parser.add_argument('--min_spectrum_length', type = int, action = 'store',
                         dest = 'min_spectrum_length', default = 1)
@@ -667,7 +656,7 @@ if __name__ == '__main__':
     parser.add_argument("--max_obs_mass", type = int, default = 0)
     parser.add_argument('--normalize', dest = "normalize", type = str,
                         help = "Name of the spectrum preprocessing pipeline.", 
-                        default = 'top300TightSequest')
+                        default = 'top300Sequest')
     parser.add_argument('--per_spectrum_mz_bound', action = 'store_true', 
                         default = False, help = "Calculate observed m/z bound per spectrum")
     parser.add_argument('--mz_lb', type = float, action = 'store',
@@ -797,7 +786,8 @@ if __name__ == '__main__':
         # create structure and master files then triangulate
         try:
             create_drip_structure(args.high_res_ms2, args.structure_file, 
-                                  args.max_obs_mass)
+                                  args.max_obs_mass, False, False,
+                                  args.high_res_gauss_dist)
         except:
             print "Could not create DRIP structure file %s, exitting" % args.structure_file
             exit(-1)
@@ -822,7 +812,8 @@ if __name__ == '__main__':
 
         try:
             write_covar_file(args.high_res_ms2, args.covar_file,
-                             args.learned_covars)
+                             args.learned_covars, True,
+                             args.high_res_gauss_dist)
         except:
             print "Could not create covariance file %s, exitting" % args.covar_file
             exit(-1)

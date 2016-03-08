@@ -99,6 +99,8 @@ def copyArgs(argsA, argsB):
     argsA.scan_id_list = argsB.scan_id_list
     argsA.charges = argsB.charges
     argsA.high_res_ms2 = argsB.high_res_ms2
+    argsA.high_res_gauss_dist = argsB.high_res_gauss_dst
+    argsA.precursor_filter = argsB.precursor_filter
     argsA.decoys = argsB.decoys
     argsA.num_threads = argsB.num_threads
     argsA.top_match = argsB.top_match
@@ -233,6 +235,10 @@ def parseInputOptions():
     searchParamsGroup.add_argument('--charges', type = str, action = 'store', default = 'All', help = help_charges)
     help_high_res_ms2 = """<T|F> - boolean, whether the search is over high-res ms2 (high-high) spectra. When this parameter is true, DRIP used the real valued masses of candidate peptides as its Gaussian means. For low-res ms2 (low-low or high-low), the observed m/z measures are much less accurate so these Gaussian means are learned using training data (see dripTrain). Default=False."""
     searchParamsGroup.add_argument('--high-res-ms2', type = str, action = 'store', default = 'false', help = help_high_res_ms2)
+    help_high_res_gauss_dist = """<float> - m/z distance for 99.9% of m/z Gaussian mass to lie within.  Only available for high-res MS2 searches. Default=0.05."""
+    searchParamsGroup.add_argument('--high-res-gauss-dist', type = float, action = 'store', default = 0.05, help = help_high_res_gauss_dist)
+    help_precursor_filter = """<T|F> - boolean, when true, filter all peaks 1.5Da from the observed precursor mass. Default=False."""
+    searchParamsGroup.add_argument('--precursor-filter', type = str, action = 'store', default = 'false', help = help_precursor_filter)
     help_decoys = '<T|F> - whether to create (shuffle target peptides) and search decoy peptides. Default = True'
     searchParamsGroup.add_argument('--decoys', type = str, action = 'store', 
                                    default = 'True', help = help_decoys)
@@ -287,10 +293,7 @@ def parseInputOptions():
     parser.add_argument("--max_obs_mass", type = int, default = 0)
     parser.add_argument('--normalize', dest = "normalize", type = str,
                         help = "Name of the spectrum preprocessing pipeline.", 
-                        default = 'top300TightSequest')
-    # help_filt_theo_peaks = "Filter theoretical peaks outside of observed spectra min and max"
-    # parser.add_argument('--filt_theo_peaks', action = 'store_false', dest = 'filt_theo_peaks', 
-    #                     default = True, help = help_filt_theo_peaks)
+                        default = 'top300Sequest')
     parser.add_argument('--per_spectrum_mz_bound', action = 'store_true', 
                         default = False, help = "Calculate observed m/z bound per spectrum")
     parser.add_argument('--mz_lb', type = float, action = 'store',
@@ -379,6 +382,14 @@ def process_args(args):
     args.cluster_mode = check_arg_trueFalse(args.cluster_mode)
     args.write_cluster_scripts = check_arg_trueFalse(args.write_cluster_scripts)
     args.merge_cluster_results = check_arg_trueFalse(args.merge_cluster_results)
+    args.precursor_filter = check_arg_trueFalse(args.precursor_filter)
+
+    if args.precursor_filter:
+        args.normalize = 'top300TightSequest'
+    else:
+        args.normalize = 'top300Sequest'
+
+    print args.normalize
 
     args.filt_theo_peaks = True
 
@@ -1147,7 +1158,8 @@ def runDrip(args):
     # create structure and master files then triangulate
     try:
         create_drip_structure(args.high_res_ms2, args.structure_file, 
-                              args.max_obs_mass)
+                              args.max_obs_mass, False, False,
+                              args.high_res_gauss_dist)
     except:
         print "Could not create DRIP structure file %s, exitting" % args.structure_file
         exit(-1)
@@ -1174,7 +1186,8 @@ def runDrip(args):
 
     try:
         write_covar_file(args.high_res_ms2, args.covar_file, 
-                         args.learned_covars)
+                         args.learned_covars, True,
+                         args.high_res_gauss_dist)
     except:
         print "Could not create covariance file %s, exitting" % args.covar_file
         exit(-1)
@@ -1286,7 +1299,8 @@ def runDripCluster(args):
     # create structure and master files then triangulate
     try:
         create_drip_structure(args.high_res_ms2, args.structure_file, 
-                              args.max_obs_mass)
+                              args.max_obs_mass, False, False,
+                              args.high_res_gauss_dist)
     except:
         print "Could not create DRIP structure file %s, exitting" % args.structure_file
         exit(-1)
@@ -1313,7 +1327,8 @@ def runDripCluster(args):
 
     try:
         write_covar_file(args.high_res_ms2, args.covar_file, 
-                         args.learned_covars)
+                         args.learned_covars, True,
+                         args.high_res_gauss_dist)
     except:
         print "Could not create covariance file %s, exitting" % args.covar_file
         exit(-1)
@@ -1498,7 +1513,8 @@ if __name__ == '__main__':
     # create structure and master files then triangulate
     try:
         create_drip_structure(args.high_res_ms2, args.structure_file, 
-                              args.max_obs_mass)
+                              args.max_obs_mass, False, False,
+                              args.high_res_gauss_dist)
     except:
         print "Could not create DRIP structure file %s, exitting" % args.structure_file
         exit(-1)
@@ -1525,7 +1541,8 @@ if __name__ == '__main__':
 
     try:
         write_covar_file(args.high_res_ms2, args.covar_file,
-                         args.learned_covars)
+                         args.learned_covars, True,
+                         args.high_res_gauss_dist)
     except:
         print "Could not create covariance file %s, exitting" % args.covar_file
         exit(-1)

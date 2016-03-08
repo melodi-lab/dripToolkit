@@ -333,7 +333,7 @@ def create_drip_constants():
 def create_drip_structure(highRes = False, strFile = "model.str", 
                           maxTermMass = "200002", forcedAlignment = False, 
                           training = False,
-                          highResMzWidth = 0.1):
+                          highResMzWidth = 0.05):
     writeCPTs()
     create_drip_constants()
     if not training:
@@ -537,7 +537,7 @@ def triangulate_drip(strFile = "model.str", mtrFile = "model.mtr"):
 
 def write_covar_file(highRes = False, covarFile = 'covar.txt', 
                      learnedCovars = '', riptidePrior = True,
-                     highResMzWidth = 0.1):
+                     highResMzWidth = 0.05):
     hrMzCovar = 1.5625000000e-04
     lrMzCovar = 1.5625000000e-02
 

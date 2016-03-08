@@ -62,6 +62,8 @@ debug=0
 
 bw = 1.0005079
 bo = 0.68
+# bw = 1.0
+# bo = 0.0
 ########## would have to rework all code to use below, but this would make working with the DRIP means
 ########## considerably simpler.  However, mean class is overkill as the means are scalars
 def load_dripMeansClass(master_file):
