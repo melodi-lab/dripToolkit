@@ -22,10 +22,18 @@ from pyFiles.psm import PSM
 ####### new_range = range(10)
 ####### y_interp(new_range)
 
-def load_percolator_output(filename):
+def load_percolator_output(filename, isCruxPercolator = False):
     """ filename - percolator tab delimited output file
-    header:
+    header for stand-alone percolator:
     (1)PSMId (2)score (3)q-value (4)posterior_error_prob (5)peptide (6)proteinIds
+
+    header for crux percolator:
+    (1)file  (2)file_idx (3)scan (4)charge 
+    (5)spectrum precursor m/z (6)spectrum neutral mass (7) peptide mass 
+    (8)percolator score (9)percolator rank (10)percolator q-value 
+    (11)total matches/spectrum (12)sequence (13)cleavage type 
+    (14)protein id (15)flanking aa
+
     Output:
     list of tuples targets, such that for t \in targets:
     t[0] = sid, t[1] = peptide, t[2] = score, t[3] = charge
@@ -37,20 +45,36 @@ def load_percolator_output(filename):
     # add all psms
     max_psms = {} # take max PSM per charge
     for lineNum, psm in enumerate(reader):
-        psmid = psm["PSMId"]
-        l = psmid.split('_')
-        try:
-            sid = int(l[2])
-            charge = int(l[3])
-        except TypeError:
-            print "Percolator assumed PSMId: [ignored]_[ignored_[scan number]_[charge]"
-            print "Skipping entry number %d:\n%s" % (lineNum, psm)
-        if sid in max_psms:
+        if not isCruxPercolator:
+            psmid = psm["PSMId"]
+            l = psmid.split('_')
+            pep_sequence = psm["peptide"][2:-2]
             curr_score = float(psm["score"])
-            if curr_score > max_psms[sid][2]:
-                max_psms[sid] = (sid, psm["peptide"][2:-2], curr_score, charge)
+            try:
+                sid = int(l[2])
+                charge = int(l[3])
+            except TypeError:
+                print "Percolator assumed PSMId: [ignored]_[ignored_[scan number]_[charge]"
+                print "Skipping entry number %d:\n%s" % (lineNum, psm)
         else:
-            max_psms[sid] = (sid, psm["peptide"][2:-2], float(psm["score"]), charge)
+            pep_sequence = psm["sequence"]
+            curr_score = float(psm["percolator score"])
+            try:
+                sid = int(psm["scan"])
+            except TypeError:
+                print "%s not integer scan number" % psm["scan"]
+                print "Skipping entry number %d:\n%s" % (lineNum, psm)
+
+            try:
+                charge = int(psm["charge"])
+            except TypeError:
+                print "%s not a valid charge" % psm["charge"]
+                print "Skipping entry number %d:\n%s" % (lineNum, psm)
+        if sid in max_psms:
+            if curr_score > max_psms[sid][2]:
+                max_psms[sid] = (sid, peptide, curr_score, charge)
+        else:
+            max_psms[sid] = (sid, pep_sequence, curr_score, charge)
     f.close()
 
     return max_psms

@@ -344,7 +344,9 @@ var peaks = ["""
     html_file.close()
 
 def percolatorPsms_gen_lorikeet(psmFile, spectrumFile, 
-                                outputDirectory, plotList = 'currPsms.html',
+                                outputDirectory,
+                                isCruxPercolator = False,
+                                plotList = 'currPsms.html',
                                 mods_spec = '',  
                                 nterm_mods_spec = '', 
                                 cterm_mods_spec = '',
@@ -395,7 +397,7 @@ def percolatorPsms_gen_lorikeet(psmFile, spectrumFile,
         cterm_mods = cm[0]                
         
     # load Percolator PSMs
-    t = load_percolator_output(psmFile)
+    t = load_percolator_output(psmFile, isCruxPercolator)
 
     # load .ms2 spectra
     spectra, _, _, _ = load_spectra_minMaxMz(spectrumFile)
