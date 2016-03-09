@@ -1,0 +1,6 @@
+PSMId	score	q-value	posterior_error_prob	peptide	proteinIds
+target_0_2292_3_1	2.30224	0	2.8907e-09	-.FSEIAEAYEILGDEEK.-	Peptide491812
+target_0_486_3_1	2.27349	0	3.59686e-09	-.DIPEGGSK.-	Peptide503305
+target_0_487_4_1	2.24681	0	4.40576e-09	-.LWRYHSK.-	Peptide498695
+target_0_139_4_1	2.19435	0	6.56546e-09	-.MNGNEMSDDDINDDNK.-	Peptide498695
+target_0_10997_2_1	2.19435	0	6.56546e-09	-.EQLSHVDHDEK.-	Peptide498695

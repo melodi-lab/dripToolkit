@@ -1,0 +1,5 @@
+PSMId	score	q-value	posterior_error_prob	peptide	proteinIds
+target_0_591_2_1	2.30224	0	2.8907e-09	-.LETALER.-	Peptide491812
+target_0_597_2_1	2.27349	0	3.59686e-09	-.YLTTTWR.-	Peptide503305
+target_0_6028_2_1	2.24681	0	4.40576e-09	-.TGPSPQPESQGSFYQR.-	Peptide498695
+target_0_28041_2_1	2.19435	0	6.56546e-09	-.TFTVDVSSPTENGVFDPASYAK.-	Peptide498695
