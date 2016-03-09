@@ -24,6 +24,7 @@ import copy
 
 from shutil import rmtree
 from dripExtract import runDripExtract
+from dripDigest import parse_var_mods
 from pyFiles.spectrum import MS2Spectrum
 from pyFiles.peptide import Peptide, amino_acids_to_indices
 from pyFiles.normalize import pipeline
@@ -44,7 +45,7 @@ from pyFiles.dripEncoding import (create_drip_structure,
                                   load_drip_means)
 
 from pyFiles.constants import allPeps
-from pyFiles.ioPsmFunctions import load_psms, load_pin_file, load_pin_return_dict
+from pyFiles.ioPsmFunctions import load_psms, load_pin_file, load_pin_return_dict, load_percolator_output
 from pyFiles.shard_spectra import load_spectra_ret_dict
 
 from pyFiles.process_vitvals import parse_dripExtract
@@ -53,6 +54,8 @@ from subprocess import call, check_output
 # open GMTK file streams
 stdo = open(os.devnull, "w")
 stde = sys.stdout
+
+allPeps = set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')-set('JOBZUX')
 
 def peptide_sentence_flatascii(pep_dt, peptide, bNy, pep_num, spectra_id, max_mass,
                                filename, istarget, max_candidate_theo_peaks):
@@ -224,6 +227,202 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
         fid.write("<a href=\"%s\">%s Scan %d Charge %d %s</a><br>\n" %
                   (plotName, kind, p.scan, p.charge, p.peptide))
 
+    fid.close()
+
+def write_lorikeet_file(psm, spec, filename,
+                        mods = {}, nterm_mods = 0, cterm_mods = 0,
+                        var_mods = {},
+                        var_mod_incides = {},
+                        title = '',
+                        width = '', height = '',
+                        ms1scanLabel = ''):
+    """Write html file for lorikeet plotting
+    psm: tuple such that psm[0] = scan number, psm[1] = peptide string, psm[2] = score, psm[3] = charge
+    
+    """
+
+    sid = psm[0]
+    peptide = psm[1]
+    score = psm[2]
+    charge = psm[3]
+
+    basename = filename.split('/')[-1]
+    basename = basename.split('.')[0]
+
+    html_file = open(filename, 'w')
+    if not title:
+        title = 'Scan ' + str(sid) + ', ' + psm[1] + ' ' + str(charge) + '+, score = ' + str(score)
+
+    print >> html_file, """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    
+    <title>Lorikeet Spectrum Viewer</title>
+    
+    <!--[if IE]><script language="javascript" type="text/javascript" src="../js/excanvas.min.js"></script><![endif]-->
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.4/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../lorikeet_0.3.5/js/jquery.flot.js"></script>
+    <script type="text/javascript" src="../lorikeet_0.3.5/js/jquery.flot.selection.js"></script>
+    
+    <script type="text/javascript" src="../lorikeet_0.3.5/js/specview.js"></script>
+    <script type="text/javascript" src="../lorikeet_0.3.5/js/peptide.js"></script>
+    <script type="text/javascript" src="../lorikeet_0.3.5/js/aminoacid.js"></script>
+    <script type="text/javascript" src="../lorikeet_0.3.5/js/ion.js"></script>
+    
+    <link REL="stylesheet" TYPE="text/css" HREF="../lorikeet_0.3.5/css/lorikeet.css">
+    
+</head>
+
+<body>
+"""
+    print >> html_file, "<h1>%s</h1>" % title
+    print >> html_file, """<div id="lorikeet"></div>
+
+<script type="text/javascript">
+
+$(document).ready(function () {
+
+	/* render the spectrum with the given options */
+	$("#lorikeet").specview({sequence: sequence,"""
+    print >> html_file, "								scanNum: %d," % sid
+    print >> html_file, "								charge: %d," % charge
+    print >> html_file, "								precursorMz: %f," % spec.precursor_mz
+    print >> html_file, "								fileName:'%s'," % (basename)
+    if var_mods:
+        print >> html_file, "								variableMods: varMods,"
+    if mods:
+        print >> html_file, "								staticMods: staticMods,"
+    if nterm_mods:
+        print >> html_file, "								ntermMod: ntermMod,"
+    if cterm_mods:
+        print >> html_file, "								ctermMod: ctermMod,"
+    print >> html_file, """								peaks: peaks
+								});	
+
+});
+"""
+    print >> html_file, "var sequence = \"%s\";" % peptide
+
+    # print out variable mods
+    if var_mods:
+        print >> html_file, "var varMods = [];"
+        ind = 0
+        for aa in var_mods:
+            print >> html_file, "varMods[%d]  = {index: %d, modMass: %f, aminoAcid: \"%s\"};" % (ind, var_mod_indices[aa], var_mods[aa], aa)
+            ind += 1
+    if mods:
+        print >> html_file, "var staticMods = [];"
+        ind = 0
+        for aa in mods:
+            print >> html_file, "staticMods[%d]  = {\"modMass\": %f, \"aminoAcid\": \"%s\"};" % (ind, mods[aa], aa)
+            ind += 1
+
+    if nterm_mods:
+        print >> html_file, "var ntermMod = %f;" % (nterm_mods)
+
+    if cterm_mods:
+        print >> html_file, "var ctermMod = %f;" % (cterm_mods)
+
+    print >> html_file, """// peaks in the scan: [m/z, intensity] pairs.
+var peaks = ["""
+    l = len(spec.mz)
+    num = 0
+    for (mz,intensity) in zip(spec.mz, spec.intensity):
+        if(num < l-1):
+            print >> html_file, "[%f,%f]," % (mz, intensity)
+        else:
+            print >> html_file, "[%f,%f]" % (mz, intensity)
+
+        num=num+1
+
+    print >> html_file, """];
+</script>
+</body>
+</html>"""
+    html_file.close()
+
+def percolatorPsms_gen_lorikeet(psmFile, spectrumFile, 
+                                outputDirectory, plotList = 'currPsms.html',
+                                mods_spec = '',  
+                                nterm_mods_spec = '', 
+                                cterm_mods_spec = '',
+                                cMod = True):
+    """
+    """
+    # parse modifications
+    mods, var_mods = parse_var_mods(mods_spec, True)
+    nterm_mods, nterm_var_mods = parse_var_mods(nterm_mods_spec, False)
+    cterm_mods, cterm_var_mods = parse_var_mods(cterm_mods_spec, False)
+
+    if cMod: # will typically be true
+        if 'C' not in mods:
+            mods['C'] = 57.021464
+    
+    # lorikeet only supports a single static mod to the n-terminus
+    if nterm_mods:
+        nm = []
+        for aa in allPeps:
+            if aa not in nterm_mods:
+                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift for using X"
+                print "Exitting"
+                exit(-1)
+
+            nm.append(nterm_mods[aa])
+        if len(set(nm)) > 1:
+            print "different n-teriminal shifts supplied for different amino acids, Lorikeet only supports a single constant shift to the n-terminus."
+            print "Exitting"
+            exit(-1)
+
+        nterm_mods = nm[0]
+
+    # lorikeet only supports a single static mod to the c-terminus
+    if cterm_mods:
+        cm = []
+        for aa in allPeps:
+            if aa not in cterm_mods:
+                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift for using X"
+                print "Exitting"
+                exit(-1)
+
+            cm.append(cterm_mods[aa])
+        if len(set(cm)) > 1:
+            print "different n-teriminal shifts supplied for different amino acids, Lorikeet only supports a single constant shift to the n-terminus."
+            print "Exitting"
+            exit(-1)
+
+        cterm_mods = cm[0]                
+        
+    # load Percolator PSMs
+    t = load_percolator_output(psmFile)
+
+    # load .ms2 spectra
+    spectra, _, _, _ = load_spectra_minMaxMz(spectrumFile)
+
+    # make output directory
+    if not os.path.exists(outputDirectory):
+        os.mkdir(outputDirectory)
+
+    # open filestream for master list of html files
+    fid = open(plotList, 'w')
+
+    # get original intensity values to plot
+    for sid in t:
+        if sid not in spectra:
+            print "Scan number %d specified for PSM, but not appear in provided ms2 file, skipping" % sid
+            continue
+        spec = spectra[sid]
+        psm = t[sid]
+
+        charge = psm[3]
+
+        filename = 'scan' + str(sid) + '-' + psm[1] + '-ch' + str(charge) + '.html'
+        filename = os.path.join(outputDirectory,filename)
+        write_lorikeet_file(psm, spec, filename, 
+                            mods, nterm_mods, cterm_mods)
+        fid.write("<a href=\"%s\">Scan %d, %s, Charge %d</a><br>\n"  %
+                  (filename, sid, psm[1], charge))
     fid.close()
 
 def psm(p, s0, c = 2, highResMs2 = False,

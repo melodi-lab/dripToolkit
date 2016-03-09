@@ -2560,7 +2560,10 @@ def create_reversed_decoy(p, pep_tuple, kta, targets, decoys):
     return ''
 
 def parse_var_mods(mod_spec, mainMods = True):
-    # parse modifications
+    """ Parse modifications.  Outputs are dictionaries mods, var_mods the keys of which are amino acids such that:
+        For AA in mods, mods[AA] = mass offset
+        For AA in var_mods, mods[AA] = (max such variable mods, mass offset)
+    """
     mods = {}
 
     var_mods = {}

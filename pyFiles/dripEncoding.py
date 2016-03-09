@@ -282,7 +282,7 @@ switch_delta_distribution
 2
 increment_position
 2
-   -1 { min(p0 + p1, 199) }
+   -1 { min(p0 + p1, 100) }
 
 
 DETERMINISTIC_CPT_IN_FILE inline 5
@@ -694,7 +694,7 @@ def make_master_parameters(options, fragment_ion_dict, ions):
 
     for ion in ions:
         i = fragment_ion_dict[ion]
-        mean_file.write('%d mean%d 1 %.8f\n' % (i, i, ion))
+        mean_file.write('%d mean%d 1 %.10f\n' % (i, i, ion))
         gauss_file.write('%d 1 0 %s%d mean%d %s\n' % (i, options.gaussian_component_name, i, i, options.covar_name))
         mixture_file.write('%d 1 %s%d 1 %s %s%d\n' % (i, options.mixture_name, i, options.dpmf_name, options.gaussian_component_name, i))
         collection_file.write('%s%d\n' % (options.mixture_name, i))
@@ -739,7 +739,7 @@ def make_master_parameters_lowres(options, dripMeans):
         meanName = 'mean' + str(ind)
         gcName = options.gaussian_component_name + str(ind)
         mixtureName = options.mixture_name + str(ind)
-        mean_file.write('%d %s 1 %.8f\n' % (i, meanName, ion))
+        mean_file.write('%d %s 1 %.10e\n' % (i, meanName, ion))
         gauss_file.write('%d 1 0 %s %s %s\n' % (i, gcName, meanName, options.covar_name))
         mixture_file.write('%d 1 %s 1 %s %s\n' % (i, mixtureName, options.dpmf_name, gcName))
         collection_file.write('%s\n' % (mixtureName))

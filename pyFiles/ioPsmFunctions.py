@@ -22,6 +22,39 @@ from pyFiles.psm import PSM
 ####### new_range = range(10)
 ####### y_interp(new_range)
 
+def load_percolator_output(filename):
+    """ filename - percolator tab delimited output file
+    header:
+    (1)PSMId (2)score (3)q-value (4)posterior_error_prob (5)peptide (6)proteinIds
+    Output:
+    list of tuples targets, such that for t \in targets:
+    t[0] = sid, t[1] = peptide, t[2] = score, t[3] = charge
+    """
+    f = open(filename)
+    reader = csv.DictReader(f, delimiter = '\t', skipinitialspace = True)
+
+    scoref = lambda r: float(r["score"])
+    # add all psms
+    max_psms = {} # take max PSM per charge
+    for lineNum, psm in enumerate(reader):
+        psmid = psm["PSMId"]
+        l = psmid.split('_')
+        try:
+            sid = int(l[2])
+            charge = int(l[3])
+        except TypeError:
+            print "Percolator assumed PSMId: [ignored]_[ignored_[scan number]_[charge]"
+            print "Skipping entry number %d:\n%s" % (lineNum, psm)
+        if sid in max_psms:
+            curr_score = float(psm["score"])
+            if curr_score > max_psms[sid][2]:
+                max_psms[sid] = (sid, psm["peptide"][2:-2], curr_score, charge)
+        else:
+            max_psms[sid] = (sid, psm["peptide"][2:-2], float(psm["score"]), charge)
+    f.close()
+
+    return max_psms
+
 def load_peptides(filename):
     """ Return dictionary
     """
