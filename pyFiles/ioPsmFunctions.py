@@ -22,6 +22,51 @@ from pyFiles.psm import PSM
 ####### new_range = range(10)
 ####### y_interp(new_range)
 
+def load_psm_for_lorikeet(filename, 
+                          scanField, peptideField, 
+                          chargeField,
+                          scoreField):
+    """ filename - general tab delimited file with header containing field
+                   scanField - scan ID number
+                   peptideField - peptide string
+                   scoreField (optional) - PSM score
+
+    Output:
+    list of tuples targets, such that for t \in targets:
+    t[0] = sid, t[1] = peptide, t[2] = score, t[3] = charge
+    """
+    f = open(filename)
+    reader = csv.DictReader(f, delimiter = '\t', skipinitialspace = True)
+
+    curr_score = 0.0
+    # add all psms
+    max_psms = {} # take max PSM per charge
+    for lineNum, psm in enumerate(reader):
+        pep_sequence = psm[peptideField]
+        if scoreField:
+            try:
+                curr_score = float(psm[scoreField])
+            except TypeError:
+                print "%s not valid header field, exitting" % scoreField
+                exit(-1)
+        try:
+            sid = int(psm[scanField])
+        except TypeError:
+            print "%s not valid header field, exitting" % scanField
+        try:
+            charge = int(psm[chargeField])
+        except TypeError:
+            print "%s not valid header field, exitting" % chargeField
+
+        if sid in max_psms:
+            if curr_score > max_psms[sid][2]:
+                max_psms[sid] = (sid, peptide, curr_score, charge)
+        else:
+            max_psms[sid] = (sid, pep_sequence, curr_score, charge)
+    f.close()
+
+    return max_psms
+
 def load_percolator_output(filename, isCruxPercolator = False):
     """ filename - percolator tab delimited output file
     header for stand-alone percolator:

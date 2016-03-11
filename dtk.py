@@ -45,7 +45,7 @@ from pyFiles.dripEncoding import (create_drip_structure,
                                   load_drip_means)
 
 from pyFiles.constants import allPeps
-from pyFiles.ioPsmFunctions import load_psms, load_pin_file, load_pin_return_dict, load_percolator_output
+from pyFiles.ioPsmFunctions import load_psms, load_pin_file, load_pin_return_dict, load_percolator_output, load_psm_for_lorikeet
 from pyFiles.shard_spectra import load_spectra_ret_dict
 
 from pyFiles.process_vitvals import parse_dripExtract
@@ -342,6 +342,92 @@ var peaks = ["""
 </body>
 </html>"""
     html_file.close()
+
+def gen_lorikeet(psmFile, spectrumFile, 
+                 outputDirectory,
+                 plotList = 'currPsms.html',
+                 mods_spec = '',  
+                 nterm_mods_spec = '', 
+                 cterm_mods_spec = '',
+                 scanField = 'scan',
+                 peptideField = 'sequence',
+                 chargeField = 'charge',
+                 scoreField = 'score',
+                 cMod = True):
+    """ Generate html files for Lorikeet plugin
+    """
+    # parse modifications
+    mods, var_mods = parse_var_mods(mods_spec, True)
+    nterm_mods, nterm_var_mods = parse_var_mods(nterm_mods_spec, False)
+    cterm_mods, cterm_var_mods = parse_var_mods(cterm_mods_spec, False)
+
+    if cMod: # will typically be true
+        if 'C' not in mods:
+            mods['C'] = 57.021464
+    
+    # lorikeet only supports a single static mod to the n-terminus
+    if nterm_mods:
+        nm = []
+        for aa in allPeps:
+            if aa not in nterm_mods:
+                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift for using X"
+                print "Exitting"
+                exit(-1)
+
+            nm.append(nterm_mods[aa])
+        if len(set(nm)) > 1:
+            print "different n-teriminal shifts supplied for different amino acids, Lorikeet only supports a single constant shift to the n-terminus."
+            print "Exitting"
+            exit(-1)
+
+        nterm_mods = nm[0]
+
+    # lorikeet only supports a single static mod to the c-terminus
+    if cterm_mods:
+        cm = []
+        for aa in allPeps:
+            if aa not in cterm_mods:
+                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift for using X"
+                print "Exitting"
+                exit(-1)
+
+            cm.append(cterm_mods[aa])
+        if len(set(cm)) > 1:
+            print "different n-teriminal shifts supplied for different amino acids, Lorikeet only supports a single constant shift to the n-terminus."
+            print "Exitting"
+            exit(-1)
+
+        cterm_mods = cm[0]                
+        
+    # load Percolator PSMs
+    t = load_psm_for_lorikeet(psmFile, scanField, peptideField,
+                              chargeField, scoreField)
+    # load .ms2 spectra
+    spectra, _, _, _ = load_spectra_minMaxMz(spectrumFile)
+
+    # make output directory
+    if not os.path.exists(outputDirectory):
+        os.mkdir(outputDirectory)
+
+    # open filestream for master list of html files
+    fid = open(plotList, 'w')
+
+    for sid in t:
+        if sid not in spectra:
+            print "Scan number %d specified for PSM, but not appear in provided ms2 file, skipping" % sid
+            continue
+        spec = spectra[sid]
+        psm = t[sid]
+
+        charge = psm[3]
+
+        filename = 'scan' + str(sid) + '-' + psm[1] + '-ch' + str(charge) + '.html'
+        filename = os.path.join(outputDirectory,filename)
+        write_lorikeet_file(psm, spec, filename, 
+                            mods, nterm_mods, cterm_mods)
+        fid.write("<a href=\"%s\">Scan %d, %s, Charge %d</a><br>\n"  %
+                  (filename, sid, psm[1], charge))
+    fid.close()
 
 def percolatorPsms_gen_lorikeet(psmFile, spectrumFile, 
                                 outputDirectory,
