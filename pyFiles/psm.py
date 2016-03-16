@@ -624,7 +624,8 @@ def write_dripPSM_to_ident(fid, psm, drip_means):
 
 def write_dripPSM_to_ident_var_mods(fid, psm, drip_means,
                                     mods, nterm_mods, cterm_mods,
-                                    var_mods, nterm_var_mods, cterm_var_mods):
+                                    var_mods, nterm_var_mods, cterm_var_mods, 
+                                    isVarMods = 0):
     """ old header: (1)Kind
                     (2)Scan
                     (3)Frames
@@ -654,13 +655,32 @@ def write_dripPSM_to_ident_var_mods(fid, psm, drip_means,
                               (12)Flanking_nterm
                               (13)Flanking_ncterm
                               (14)Protein_id
+
+       header as of 3/15/2016: (1)Kind
+                              (2)Scan
+                              (3)Score
+                              (4)Peptide
+                              (5)Obs_Inserts
+                              (6)Theo_Deletes
+                              (7)Obs_peaks_scored
+                              (8)Theo_peaks_used
+                              (9)Sum_obs_intensities
+                              (10)Sum_scored_mz_dist
+                              (11)Charge
+                              (12)Flanking_nterm
+                              (13)Flanking_ncterm
+                              (14)Protein_id
+                              (15)Var_mod_seq (only apppears if variable mods selected)
                     
     """
     num_ins, num_dels, num_non_ins, num_non_dels, sum_scored_intensities, sum_scored_mz_dists = psm.calculate_drip_features(drip_means)
     try:
+        var_mod_string = psm.var_mod_sequence.split('\x00')[0]
+
         c = psm.peptide[0]
         vm = psm.var_mod_sequence[0]
         pep_str = [c]
+
         # check n-term and c-term
         if c in nterm_mods:
             pep_str += str('[%1.0e]' % nterm_mods[c])
@@ -687,9 +707,8 @@ def write_dripPSM_to_ident_var_mods(fid, psm, drip_means,
         elif c in mods:
             pep_str += str('[%1.0e]' % mods[c])
 
-        # fid.write('%c\t%d\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\n' % (psm.kind, 
+        # fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\t%s\n' % (psm.kind, 
         #                                                                         psm.scan,
-        #                                                                         psm.num_frames,
         #                                                                         psm.score,
         #                                                                         ''.join(pep_str),
         #                                                                         num_ins,
@@ -700,21 +719,39 @@ def write_dripPSM_to_ident_var_mods(fid, psm, drip_means,
         #                                                                         sum_scored_mz_dists,
         #                                                                         psm.charge,
         #                                                                         psm.flanking_nterm,
-        #                                                                         psm.flanking_cterm))
-        fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\t%s\n' % (psm.kind, 
-                                                                                psm.scan,
-                                                                                psm.score,
-                                                                                ''.join(pep_str),
-                                                                                num_ins,
-                                                                                num_dels,
-                                                                                num_non_ins, 
-                                                                                num_non_dels,
-                                                                                sum_scored_intensities,
-                                                                                sum_scored_mz_dists,
-                                                                                psm.charge,
-                                                                                psm.flanking_nterm,
-                                                                                psm.flanking_cterm,
-                                                                                psm.kind + str(psm.protein)))
+        #                                                                         psm.flanking_cterm,
+        #                                                                         psm.kind + str(psm.protein)))
+        if not isVarMods:
+            fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\t%s\n' % (psm.kind, 
+                                                                                    psm.scan,
+                                                                                    psm.score,
+                                                                                    ''.join(pep_str),
+                                                                                    num_ins,
+                                                                                    num_dels,
+                                                                                    num_non_ins, 
+                                                                                    num_non_dels,
+                                                                                    sum_scored_intensities,
+                                                                                    sum_scored_mz_dists,
+                                                                                    psm.charge,
+                                                                                    psm.flanking_nterm,
+                                                                                    psm.flanking_cterm,
+                                                                                    psm.kind + str(psm.protein)))
+        else:
+            fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\t%s\t%s\n' % (psm.kind, 
+                                                                                        psm.scan,
+                                                                                        psm.score,
+                                                                                        ''.join(pep_str),
+                                                                                        num_ins,
+                                                                                        num_dels,
+                                                                                        num_non_ins, 
+                                                                                        num_non_dels,
+                                                                                        sum_scored_intensities,
+                                                                                        sum_scored_mz_dists,
+                                                                                        psm.charge,
+                                                                                        psm.flanking_nterm,
+                                                                                        psm.flanking_cterm,
+                                                                                        psm.kind + str(psm.protein),
+                                                                                        var_mod_string))
 
     except IOError:
         print "Could not write to ident stream, exitting"
@@ -1063,8 +1100,14 @@ def write_dripSearch_ident(output, logDir, topMatch,
     except IOError:
         print "Could not open file %s for writing, exitting" % output
 
-    # identFid.write('Kind\tScan\tFrames\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\n')
-    identFid.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\n')
+    isVarMods = len(var_mods) + len(nterm_var_mods) + len(cterm_var_mods)
+
+    # identFid.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\n')
+
+    if isVarMods:
+        identFid.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\tVar_mod_seq\n')
+    else:
+        identFid.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\n')    
 
     for td, drip_means in parse_dripsearch_persidBin_generator(logDir, topMatch, 
                                                                highResMs2, spec_dict, meanFile,
@@ -1073,7 +1116,8 @@ def write_dripSearch_ident(output, logDir, topMatch,
         for psm in td:
             write_dripPSM_to_ident_var_mods(identFid, psm, drip_means,
                                             mods, nterm_mods, cterm_mods,
-                                            var_mods, nterm_var_mods, cterm_var_mods)
+                                            var_mods, nterm_var_mods, cterm_var_mods,
+                                            isVarMods)
 
     identFid.close()
     return 1
