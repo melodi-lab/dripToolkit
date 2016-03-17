@@ -15,12 +15,13 @@ import re
 import sys
 import argparse
 import cPickle as pickle
-import pyFiles.digest_fasta as df
 import multiprocessing
 import shlex
 import math
 import pyFiles.psm as psm
 
+from dripDigest import (check_arg_trueFalse,
+                        parse_var_mods)
 from random import shuffle
 from shutil import rmtree
 from pyFiles.spectrum import MS2Spectrum
@@ -145,11 +146,11 @@ def process_args(args):
         args.ident = ''
 
     # set true or false strings to booleans
-    args.write_pin = df.check_arg_trueFalse(args.write_pin)
-    args.append_to_pin = df.check_arg_trueFalse(args.append_to_pin)
-    # args.monoisotopic_precursor = df.check_arg_trueFalse(args.monoisotopic_precursor)
-    args.high_res_ms2 = df.check_arg_trueFalse(args.high_res_ms2)
-    args.randomize_ms2_spectra = df.check_arg_trueFalse(args.randomize_ms2_spectra)
+    args.write_pin = check_arg_trueFalse(args.write_pin)
+    args.append_to_pin = check_arg_trueFalse(args.append_to_pin)
+    # args.monoisotopic_precursor = check_arg_trueFalse(args.monoisotopic_precursor)
+    args.high_res_ms2 = check_arg_trueFalse(args.high_res_ms2)
+    args.randomize_ms2_spectra = check_arg_trueFalse(args.randomize_ms2_spectra)
 
     args.precursor_filter = check_arg_trueFalse(args.precursor_filter)
 
@@ -220,7 +221,9 @@ def make_drip_data_highres(args, spectra, stdo, stde):
     # check whether variable mods enzyme options were specified and 
     # necessary variable mod string specifying which amino acids are modded
     # were in the PSM files
-    t = target[0]
+    for i in target[target.keys()[0]]:
+        t = i
+        break
     if varMods or ntermVarMods or ctermVarMods:
         if varModKey not in t.other:
             print "Variable modifications enzyme options specified,"
@@ -236,7 +239,7 @@ def make_drip_data_highres(args, spectra, stdo, stde):
 
 
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
-    sid_charge =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
+    sid_charges =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
     # assume that we should randomize PSMs for multithreading purposes; only reason
     # why we are currently assuming this is that there is already a parameter for dripSearch
     # which signifies whether we should shuffle the data
@@ -271,8 +274,8 @@ def make_drip_data_highres(args, spectra, stdo, stde):
                 pep = p.peptide
                 # bNy = interleave_b_y_ions(Peptide(pep), charge, mods,
                 #                           ntermMods, ctermMods)
-                varModSequence = t.other[varModKey]
                 if varMods or ntermVarMods or ctermVarMods:
+                    varModSequence = p.other[varModKey]
                     bNy = interleave_b_y_ions_var_mods(Peptide(pep), charge, 
                                                        mods, ntermMods, ctermMods,
                                                        varMods, ntermVarMods, ctermVarMods,
@@ -291,8 +294,8 @@ def make_drip_data_highres(args, spectra, stdo, stde):
                 pep = d.peptide
                 # bNy = interleave_b_y_ions(Peptide(pep), charge, mods, 
                 #                           ntermMods, ctermMods)
-                varModSequence = d.other[varModKey]
                 if varMods or ntermVarMods or ctermVarMods:
+                    varModSequence = d.other[varModKey]
                     bNy = interleave_b_y_ions_var_mods(Peptide(pep), charge, 
                                                        mods, ntermMods, ctermMods,
                                                        varMods, ntermVarMods, ctermVarMods,
@@ -418,7 +421,9 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
     # check whether variable mods enzyme options were specified and 
     # necessary variable mod string specifying which amino acids are modded
     # were in the PSM files
-    t = target[0]
+    for i in target[target.keys()[0]]:
+        t = i
+        break
     if varMods or ntermVarMods or ctermVarMods:
         if varModKey not in t.other:
             print "Variable modifications enzyme options specified,"
@@ -484,8 +489,8 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
                 pep = p.peptide
                 # bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods,
                 #                                  ntermMods, ctermMods)
-                varModSequence = t.other[varModKey]
                 if varMods or ntermVarMods or ctermVarMods:
+                    varModSequence = p.other[varModKey]
                     bNy = interleave_b_y_ions_var_mods_lowres(Peptide(pep), charge, 
                                                               mods, ntermMods, ctermMods,
                                                               varMods, ntermVarMods, ctermVarMods,
@@ -510,8 +515,8 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
                 pep = d.peptide
                 # bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods, 
                 #                           ntermMods, ctermMods)
-                varModSequence = d.other[varModKey]
                 if varMods or ntermVarMods or ctermVarMods:
+                    varModSequence = d.other[varModKey]
                     bNy = interleave_b_y_ions_var_mods_lowres(Peptide(pep), charge, 
                                                               mods, ntermMods, ctermMods,
                                                               varMods, ntermVarMods, ctermVarMods,
@@ -970,7 +975,7 @@ if __name__ == '__main__':
                                          args.output, 
                                          args.mean_file, spec_dict)
         else: # 
-            exit(-1)
+            psm.write_output(targets, decoys, args.output, args.mean_file, spec_dict)
             # todo: make sure Protein_id field is present in file, since protein is a mandatory field
             # in the pin file
 

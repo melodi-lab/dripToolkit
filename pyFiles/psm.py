@@ -1292,7 +1292,11 @@ def write_output(targets, decoys, filename, meanFile, spec_dict):
 
     identFid.write('Kind\tScan\tFrames\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\n')
 
-    for sid, charge in targets:
+    sidCharges = targets.keys()
+    sidCharges.sort(key = lambda r: r[0])
+
+    # for sid, charge in targets:
+    for sid, charge in sidCharges:
         s = spec_dict[sid]
         for psm in targets[sid,charge]:
             psm.add_obs_spectrum(s)

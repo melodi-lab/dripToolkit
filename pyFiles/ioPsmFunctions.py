@@ -13,14 +13,10 @@ import itertools
 import types
 import numpy
 import math
-# import scipy.interpolate
+import re
 import collections
 
 from pyFiles.psm import PSM
-####### how to use linear interpolation:
-####### y_interp = scipy.interpolate.interp1d(x,y)
-####### new_range = range(10)
-####### y_interp(new_range)
 
 def load_psm_for_lorikeet(filename, 
                           scanField, peptideField, 
@@ -42,7 +38,9 @@ def load_psm_for_lorikeet(filename,
     # add all psms
     max_psms = {} # take max PSM per charge
     for lineNum, psm in enumerate(reader):
-        pep_sequence = psm[peptideField]
+        # strip any mass offsets (variable or static) denoted in the peptide string
+        pep_sequence = re.sub("[\[].*?[\]]", "", psm[peptideField])
+        # pep_sequence = psm[peptideField]
         if scoreField:
             try:
                 curr_score = float(psm[scoreField])
@@ -257,8 +255,8 @@ def write_ident(output_file, targets, decoys, target_db, decoy_db):
     outfile.close()
 
 def comp_psm_files(file0, file1):
-    p0 = load_drip_output(file0)
-    p1 = load_drip_output(file1)
+    p0 = load_drip_output(file0, True)
+    p1 = load_drip_output(file1, True)
 
     disc = 0
 
@@ -317,25 +315,10 @@ def comp_psm_files(file0, file1):
                             print "Scan %d charge %d: f1 %s=%s, f2 %s=%s" % (sid, charge,
                                                                              po[k], qo[k])
                             disc += 1
-                # for k in keys:
-                #     try:
-                #         el0 = p0[k]
-                #     except KeyError:
-                #         print "Header fields are different between the two files, exitting"
-                #         exit(-1)
-                #     try:
-                #         el1 = p1[k]
-                #     except KeyError:
-                #         print "Header fields are different between the two files, exitting"
-                #         exit(-1)
-
-                #     if el0 != el1:
-                #         print "Scan %d charge %d: field %s: f0=%s, f1=%s" % (sid, charge,
-                #                                                              k, el0, el1)
 
     print "%d target discrepancies found" % disc
 
-def load_psms(filename):
+def load_psms(filename, stripSeqStringMassOffsets = True):
     """Load an identification file, the output of spectrum identification.
 
     Standard DRIP output fields:
@@ -396,8 +379,14 @@ def load_psms(filename):
             if keys:
                 for k in keys:
                     el[k] = p[k]
+            
+            if stripSeqStringMassOffsets:
+                # strip any mass offsets (variable or static) denoted in the peptide string
+                pep_sequence = re.sub("[\[].*?[\]]", "", p["Peptide"])
+            else:
+                pep_sequence = p["Peptide"]
 
-            el = PSM(p["Peptide"],
+            el = PSM(pep_sequence,
                      float(p["Score"]),
                      int(p[sidKey]),
                      p["Kind"],
@@ -419,7 +408,7 @@ def load_psms(filename):
     f.close()
     return targets, decoys, num_psms
 
-def load_psm_library(filename):
+def load_psm_library(filename, stripSeqStringMassOffsets = True):
     """Load high-confidence PSMs from a tab-delimited file with fields: Peptide, Scan, Charge
     """
     psms = {}
@@ -459,7 +448,13 @@ def load_psm_library(filename):
                 for k in keys:
                     el[k] = p[k]
 
-            el = PSM(p["Peptide"],
+            if stripSeqStringMassOffsets:
+                # strip any mass offsets (variable or static) denoted in the peptide string
+                pep_sequence = re.sub("[\[].*?[\]]", "", p["Peptide"])
+            else:
+                pep_sequence = p["Peptide"]
+
+            el = PSM(pep_sequence,
                      0.0,
                      int(p["Scan"]),
                      "t",
@@ -474,7 +469,7 @@ def load_psm_library(filename):
     f.close()
     return psms, num_psms
 
-def load_drip_output(filename):
+def load_drip_output(filename, stripSeqStringMassOffsets = False):
     """ Load all PSMs output by DRIP, or any tab-delimited output of a mass-spec experiment with field "Scan" to denote
         the spectrum identification number
         Todo: add a parser to load PSMs from a DRIP run, returning each PSM as an instance of the 
@@ -533,7 +528,13 @@ def load_drip_output(filename):
             el[k] = l[k]
 
         try:
-            el = PSM(l["Peptide"],
+            if stripSeqStringMassOffsets:
+                # strip any mass offsets (variable or static) denoted in the peptide string
+                pep_sequence = re.sub("[\[].*?[\]]", "", l["Peptide"])
+            else:
+                pep_sequence = l["Peptide"]
+
+            el = PSM(pep_sequence,
                      float(l["Score"]),
                      int(l[sidKey]),
                      l["Kind"],
@@ -547,7 +548,8 @@ def load_drip_output(filename):
 
     return all_psms
 
-def load_drip_psms(filename, training_decoys_by_charge, psms_by_charge):
+def load_drip_psms(filename, training_decoys_by_charge, psms_by_charge, 
+                   stripSeqStringMassOffsets = False):
     """ Load all PSMs output by DRIP, or any tab-delimited output of a mass-spec experiment with field "Scan" to denote
         the spectrum identification number
 
@@ -601,7 +603,13 @@ def load_drip_psms(filename, training_decoys_by_charge, psms_by_charge):
         for k in keys:
             el[k] = l[k]
         try:
-            el = PSM(l["Peptide"],
+            if stripSeqStringMassOffsets:
+                # strip any mass offsets (variable or static) denoted in the peptide string
+                pep_sequence = re.sub("[\[].*?[\]]", "", l["Peptide"])
+            else:
+                pep_sequence = l["Peptide"]
+
+            el = PSM(pep_sequence,
                      float(l["Score"]),
                      int(l[sidKey]),
                      l["Kind"],
