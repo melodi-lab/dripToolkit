@@ -27,7 +27,6 @@ from pyFiles.spectrum import MS2Spectrum
 from pyFiles.peptide import Peptide, amino_acids_to_indices
 from pyFiles.normalize import pipeline
 from pyFiles.pfile.wrapper import PFile
-# from pyFiles.args import make_dir_callback
 from pyFiles.dripEncoding import (create_drip_structure,
                                   create_drip_master,
                                   triangulate_drip,
@@ -38,7 +37,9 @@ from pyFiles.dripEncoding import (create_drip_structure,
                                   make_master_parameters,
                                   make_master_parameters_lowres,
                                   interleave_b_y_ions,
+                                  interleave_b_y_ions_var_mods,
                                   interleave_b_y_ions_lowres,
+                                  interleave_b_y_ions_var_mods_lowres,
                                   filter_theoretical_peaks,
                                   filter_theoretical_peaks_lowres,
                                   load_drip_means)
@@ -191,20 +192,49 @@ def make_drip_data_highres(args, spectra, stdo, stde):
        - args.max_mass will be updated to the size of the number of unique theoretical fragmentation locations (floating point if high-res ms2, integers if low-res ms2)
     """
     # parse modifications
-    mods = df.parse_mods(args.mods_spec, True)
+    mods, varMods = parse_var_mods(args.mods_spec, True)
     # print "mods:"
     # print mods
-    ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
+    ntermMods, ntermVarMods = parse_var_mods(args.nterm_peptide_mods_spec, False)
     # print "n-term mods:"
-    # print ntermMods
-    ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
-    # print "c-term mods:"
-    # print ctermMods
+    # print nterm_mods
+    ctermMods, ctermVarMods = parse_var_mods(args.cterm_peptide_mods_spec, False)
+
+    varModKey = "Var_mod_seq"
+    # # parse modifications
+    # mods = df.parse_mods(args.mods_spec, True)
+    # # print "mods:"
+    # # print mods
+    # ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
+    # # print "n-term mods:"
+    # # print ntermMods
+    # ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
+    # # print "c-term mods:"
+    # # print ctermMods
 
     if not args.append_to_pin:
         target,decoy,num_psms = load_psms(args.psm_file)
     else:
         target,decoy,num_psms = load_pin_file(args.psm_file)
+
+    # check whether variable mods enzyme options were specified and 
+    # necessary variable mod string specifying which amino acids are modded
+    # were in the PSM files
+    t = target[0]
+    if varMods or ntermVarMods or ctermVarMods:
+        if varModKey not in t.other:
+            print "Variable modifications enzyme options specified,"
+            print "but PSM file does not contain necessary field Var_mod_seq for strings specifying which amino acids are modified."
+            print "Exitting"
+            exit(-1)
+    else:
+        if varModKey in t.other:
+            print "PSM file does not contains field Var_mod_seq denoting variable modifications,"
+            print "but variable modifications enzyme options not specified."
+            print "Exitting"
+            exit(-1)
+
+
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
     sid_charge =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
     # assume that we should randomize PSMs for multithreading purposes; only reason
@@ -239,8 +269,17 @@ def make_drip_data_highres(args, spectra, stdo, stde):
             # calculate maximum decoy and target theoretical spectra cardinalities
             for p in target[s.spectrum_id, charge]:
                 pep = p.peptide
-                bNy = interleave_b_y_ions(Peptide(pep), charge, mods,
-                                          ntermMods, ctermMods)
+                # bNy = interleave_b_y_ions(Peptide(pep), charge, mods,
+                #                           ntermMods, ctermMods)
+                varModSequence = t.other[varModKey]
+                if varMods or ntermVarMods or ctermVarMods:
+                    bNy = interleave_b_y_ions_var_mods(Peptide(pep), charge, 
+                                                       mods, ntermMods, ctermMods,
+                                                       varMods, ntermVarMods, ctermVarMods,
+                                                       varModSequence)
+                else:
+                    bNy = interleave_b_y_ions(Peptide(pep), charge, 
+                                              mods, ntermMods, ctermMods)
                 numBY_dict_per_sid[sid, pep] = len(bNy)
                 if args.filt_theo_peaks:
                     filter_theoretical_peaks(bNy, minMz, maxMz)
@@ -250,8 +289,17 @@ def make_drip_data_highres(args, spectra, stdo, stde):
                     ion_dict[i] = 1
             for d in decoy[s.spectrum_id, charge]:
                 pep = d.peptide
-                bNy = interleave_b_y_ions(Peptide(pep), charge, mods, 
-                                          ntermMods, ctermMods)
+                # bNy = interleave_b_y_ions(Peptide(pep), charge, mods, 
+                #                           ntermMods, ctermMods)
+                varModSequence = d.other[varModKey]
+                if varMods or ntermVarMods or ctermVarMods:
+                    bNy = interleave_b_y_ions_var_mods(Peptide(pep), charge, 
+                                                       mods, ntermMods, ctermMods,
+                                                       varMods, ntermVarMods, ctermVarMods,
+                                                       varModSequence)
+                else:
+                    bNy = interleave_b_y_ions(Peptide(pep), charge, 
+                                              mods, ntermMods, ctermMods)
                 numBY_dict_per_sid[sid, pep] = len(bNy)
                 if args.filt_theo_peaks:
                     filter_theoretical_peaks(bNy, minMz, maxMz)
@@ -335,17 +383,27 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
        Decrease number of calls to GMTK by only calling once per spectrum
        and running for all charge states in one go
     """
-
     # parse modifications
-    mods = df.parse_mods(args.mods_spec, True)
+    mods, varMods = parse_var_mods(args.mods_spec, True)
     # print "mods:"
     # print mods
-    ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
+    ntermMods, ntermVarMods = parse_var_mods(args.nterm_peptide_mods_spec, False)
     # print "n-term mods:"
-    # print ntermMods
-    ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
-    # print "c-term mods:"
-    # print ctermMods
+    # print nterm_mods
+    ctermMods, ctermVarMods = parse_var_mods(args.cterm_peptide_mods_spec, False)
+
+    varModKey = "Var_mod_seq"
+
+    # # parse modifications
+    # mods = df.parse_mods(args.mods_spec, True)
+    # # print "mods:"
+    # # print mods
+    # ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
+    # # print "n-term mods:"
+    # # print ntermMods
+    # ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
+    # # print "c-term mods:"
+    # # print ctermMods
 
     # load means
     dripMeans = load_drip_means(args.learned_means)
@@ -356,6 +414,24 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
         target,decoy,num_psms = load_psms(args.psm_file)
     else:
         target,decoy,num_psms = load_pin_file(args.psm_file)
+
+    # check whether variable mods enzyme options were specified and 
+    # necessary variable mod string specifying which amino acids are modded
+    # were in the PSM files
+    t = target[0]
+    if varMods or ntermVarMods or ctermVarMods:
+        if varModKey not in t.other:
+            print "Variable modifications enzyme options specified,"
+            print "but PSM file does not contain necessary field Var_mod_seq for strings specifying which amino acids are modified."
+            print "Exitting"
+            exit(-1)
+    else:
+        if varModKey in t.other:
+            print "PSM file does not contains field Var_mod_seq denoting variable modifications,"
+            print "but variable modifications enzyme options not specified."
+            print "Exitting"
+            exit(-1)
+
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
     sid_charges =  list(set(target.iterkeys()) | set(decoy.iterkeys()))
     # sid_charges = list(set(list(target.iterkeys()) + list(decoy.iterkeys())))
@@ -406,8 +482,17 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
         if (sid,charge) in target:
             for p in target[sid,charge]:
                 pep = p.peptide
-                bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods,
-                                                 ntermMods, ctermMods)
+                # bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods,
+                #                                  ntermMods, ctermMods)
+                varModSequence = t.other[varModKey]
+                if varMods or ntermVarMods or ctermVarMods:
+                    bNy = interleave_b_y_ions_var_mods_lowres(Peptide(pep), charge, 
+                                                              mods, ntermMods, ctermMods,
+                                                              varMods, ntermVarMods, ctermVarMods,
+                                                              varModSequence)
+                else:
+                    bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, 
+                                                     mods, ntermMods, ctermMods)
                 pepdb_list.write("t\t%d\t%s\t%d\t%d\n" % (sid, pep, len(bNy), charge))
                 # numBY for DRIP features assumes all b-/y-ions, not just those
                 # unfiltered per spectrum
@@ -423,14 +508,23 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
         if (sid,charge) in decoy:
             for d in decoy[sid,charge]:
                 pep = d.peptide
-                bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods, 
-                                          ntermMods, ctermMods)
+                # bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, mods, 
+                #                           ntermMods, ctermMods)
+                varModSequence = d.other[varModKey]
+                if varMods or ntermVarMods or ctermVarMods:
+                    bNy = interleave_b_y_ions_var_mods_lowres(Peptide(pep), charge, 
+                                                              mods, ntermMods, ctermMods,
+                                                              varMods, ntermVarMods, ctermVarMods,
+                                                              varModSequence)
+                else:
+                    bNy = interleave_b_y_ions_lowres(Peptide(pep), charge, 
+                                                     mods, ntermMods, ctermMods)
                 pepdb_list.write("d\t%d\t%s\t%d\t%d\n" % (sid, pep, len(bNy), charge))
                 # numBY for DRIP features assumes all b-/y-ions, not just those
                 # unfiltered per spectrum
                 if args.filt_theo_peaks:
                     filter_theoretical_peaks_lowres(bNy, dripMeans,
-                                             minMz, maxMz)
+                                                    minMz, maxMz)
                 drip_peptide_sentence(pep_dt, pep, bNy, 
                                       pep_num, s.spectrum_id, args.max_obs_mass,
                                       peptide_pfile, False, len(bNy)-1)
