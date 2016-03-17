@@ -550,8 +550,6 @@ def load_drip_output(filename):
 def load_drip_psms(filename, training_decoys_by_charge, psms_by_charge):
     """ Load all PSMs output by DRIP, or any tab-delimited output of a mass-spec experiment with field "Scan" to denote
         the spectrum identification number
-        Todo: add a parser to load PSMs from a DRIP run, returning each PSM as an instance of the 
-        dripPSM class
 
         Normal DRIP header fields:
         Kind, Sid or Scan, Frames, Score, Peptide, Obs_Inserts, Theo_Deletes, Obs_peaks_scored, Theo_peaks_used, Sum_obs_intensities, Sum_scored_mz_dist, Charge

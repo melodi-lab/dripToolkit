@@ -17,14 +17,38 @@ import numpy
 ####### y_interp(new_range)
 
 def write_drip_recal(output_file, targets, decoys):
+    """ Write DRIP recalibrated PSMs to tab-delimited output file.
+        Check whether variable mods were searched or not
+    """
+
     print "Writing new ident file %s" % (output_file)
     outfile = open(output_file, "w")
-    outfile.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\n')
+
+    # outfile.write('Kind\tScan\tScore\tPeptide\tObs_Inserts\tTheo_Deletes\tObs_peaks_scored\tTheo_peaks_used\tSum_obs_intensities\tSum_scored_mz_dist\tCharge\tFlanking_nterm\tFlanking_cterm\tProtein_id\n')
+
+    # check whether variable mods were searched
+    t = targets[0]
+    varModKey = "Var_mod_seq"
+    
     # register keys
-    keys = ['Kind', 'Scan', 'Score', 'Peptide', 'Obs_Inserts', 
-            'Theo_Deletes', 'Obs_peaks_scored', 'Theo_peaks_used', 
-            'Sum_obs_intensities', 'Sum_scored_mz_dist', 'Charge', 
-            'Flanking_nterm', 'Flanking_cterm', 'Protein_id']
+    if varModKey in t.other:
+        keys = ['Kind', 'Scan', 'Score', 'Peptide', 'Obs_Inserts', 
+                'Theo_Deletes', 'Obs_peaks_scored', 'Theo_peaks_used', 
+                'Sum_obs_intensities', 'Sum_scored_mz_dist', 'Charge', 
+                'Flanking_nterm', 'Flanking_cterm', 'Protein_id', 
+                varModKey]
+    else:
+        keys = ['Kind', 'Scan', 'Score', 'Peptide', 'Obs_Inserts', 
+                'Theo_Deletes', 'Obs_peaks_scored', 'Theo_peaks_used', 
+                'Sum_obs_intensities', 'Sum_scored_mz_dist', 'Charge', 
+                'Flanking_nterm', 'Flanking_cterm', 'Protein_id']
+
+    # write tab-delimited file header
+    for key in keys[:-1]:
+        outfile.write("%s\t" % key)
+    outfile.write("%s\n" % keys[-1])
+        
+
     for t,d in zip(targets,decoys):
         for k in keys:
             if k=='Kind':

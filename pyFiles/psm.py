@@ -85,18 +85,6 @@ class PSM(object):
                 self.right_flanking_aa = '-'
             self.peptide = s[1]
 
-
-    # def __cmp__(self,other_psm):
-    #     if self.scan == other.scan:
-    #         if self.score < other_psm.score:
-    #             return -1
-    #         elif self.score > other_psm.score:
-    #             return 1
-    #         else:
-    #             return 0
-    #     else:
-    #         return 2
-
     def __hash__(self):
         return hash((self.scan, self.peptide))
 
@@ -707,20 +695,6 @@ def write_dripPSM_to_ident_var_mods(fid, psm, drip_means,
         elif c in mods:
             pep_str += str('[%1.0e]' % mods[c])
 
-        # fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\t%s\n' % (psm.kind, 
-        #                                                                         psm.scan,
-        #                                                                         psm.score,
-        #                                                                         ''.join(pep_str),
-        #                                                                         num_ins,
-        #                                                                         num_dels,
-        #                                                                         num_non_ins, 
-        #                                                                         num_non_dels,
-        #                                                                         sum_scored_intensities,
-        #                                                                         sum_scored_mz_dists,
-        #                                                                         psm.charge,
-        #                                                                         psm.flanking_nterm,
-        #                                                                         psm.flanking_cterm,
-        #                                                                         psm.kind + str(psm.protein)))
         if not isVarMods:
             fid.write('%c\t%d\t%f\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%c\t%c\t%s\n' % (psm.kind, 
                                                                                     psm.scan,
