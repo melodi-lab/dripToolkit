@@ -135,6 +135,17 @@
     data. Default = <code>False</code>.
   </li>
   <li>
+    <code>--high-res-gauss-dist &lt;float&gt;</code> &ndash;
+    m/z distance for 99.9% of m/z Gaussian mass to lie within.  Only
+    available for high-res MS2 searches. Default=<code>0.05</code>.
+  </li>
+  <li>
+    <code>--precursor-filter &lt;T|F&gt;</code> &ndash;
+    boolean, when true, filter all peaks 1.5Da from the observed
+    precursor mass. Default=<code>False</code>.
+  </li>
+  <li>
+  <li>
     <code>--num-threads &lt;integer&gt;</code> – the number of threads to run on a multithreaded CPU. If supplied value is greater than number of supported threads, defaults to the maximum number of supported threads minus one. Multithreading is not suppored for cluster use as this is typically handled by the cluster job manager. Default = <code>1</code>.
   </li>
   <li>
@@ -150,23 +161,6 @@
     <code>--dripTrain-file &lt;string&gt;</code> – Output of dripTrain, DRIP parameters to be used during feature extraction. Default = <code>''</code>.
   </li>
 </ul>
-<!-- <h3>Peptide properties</h3> -->
-<!-- <ul> -->
-<!--   <li> -->
-<!--     <code>--monoisotopic-precursor &lt;T|F&gt;</code> &ndash; -->
-<!--     When computing the mass of a peptide, use monoisotopic masses -->
-<!--     rather than average masses. Default = <code>true</code>. -->
-<!--   </li> -->
-<!--   <li> -->
-<!--     <code>--precursor-window &lt;float&gt;</code> &ndash; -->
-<!--     Tolerance used for matching peptides to spectra.  Peptides must be within +/-'precursor-window' of the spectrum value. The precursor window units depend upon precursor-window-type. Default=3.<code>true</code>. -->
-<!--   </li> -->
-<!--   <li> -->
-<!--     <code>--precursor-window-type &lt;float&gt;</code> &ndash; -->
-<!--     Tolerance used for matching peptides to spectra.  Peptides must be within +/-'precursor-window' of the spectrum value. The precursor window units depend upon precursor-window-type. Default=3.<code>true</code>. -->
-<!--   </li> -->
-<!-- </ul> -->
-<!-- </li> -->
 <li>
 <h3>Amino acid modifications</h3>
 <ul>
