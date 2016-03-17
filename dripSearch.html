@@ -191,6 +191,16 @@
     data. Default = <code>False</code>.
   </li>
   <li>
+    <code>--high-res-gauss-dist &lt;float&gt;</code> &ndash;
+    m/z distance for 99.9% of m/z Gaussian mass to lie within.  Only
+    available for high-res MS2 searches. Default=<code>0.05</code>.
+  </li>
+  <li>
+    <code>--precursor-filter &lt;T|F&gt;</code> &ndash;
+    boolean, when true, filter all peaks 1.5Da from the observed
+    precursor mass. Default=<code>False</code>.
+  </li>
+  <li>
     <code>--decoys &lt;T|F&gt;</code> &ndash;
     whether to create (shuffle target peptides) and search decoy
     peptides. Default = <code>T</code>.
@@ -250,35 +260,10 @@
 <li>
 <h3>Input and output</h3>
 <ul>
-  <!-- <li> -->
-  <!--   <code>--results-dir &lt;string&gt;</code> – subdirectory of -->
-  <!--   current working directory (do not specify absolute path) -->
-  <!--   to write results file for each job. Default = <code>dripOutput</code>. -->
-  <!-- </li> -->
   <li>
     <code>--output &lt;string&gt;</code> &ndash; output file to write
     both target and decoy results. Default = <code>none</code>.
   </li>
-  <!-- <li><code>--top-match &lt;integer&gt;</code> – Specify the number of matches to report for each spectrum. Default = <code>5</code>.</li> -->
-  <!-- <li><code>--store-spectra &lt;string&gt;</code> – Specify the name of the file where the binarized fragmentation spectra will be stored. Subsequent runs of crux tide-search will execute more quickly if provided with the spectra in binary format. The filename is specified relative to the current working directory, not the Crux output directory (as specified by --output-dir). This option is not valid if multiple input spectrum files are given. Default = <code>&lt;empty&gt;</code>.</li> -->
-  <!-- <li><code>--store-index &lt;string&gt;</code> – When providing a FASTA file as the index, the generated binary index will be stored at the given path. This option has no effect if a binary index is provided as the index. Default = <code>&lt;empty&gt;</code>.</li> -->
-  <!-- <li><code>--concat &lt;T|F&gt;</code> – When set to T, target and decoy search results are reported in a single file, and only the top-scoring N matches (as specified via --top-match) are reported for each spectrum, irrespective of whether the matches involve target or decoy peptides. Default = <code>false</code>.</li> -->
-  <!-- <li><code>--print-search-progress &lt;integer&gt;</code> – Show search progress by printing every n spectra searched. Set to 0 to show no search progress. Default = <code>1000</code>.</li> -->
-  <!-- <li><code>--spectrum-parser &lt;pwiz|mstoolkit&gt;</code> – Specify the parser to use for reading in MS/MS spectra. The default, ProteoWizard parser can read the MS/MS file formats listed <a href="http://proteowizard.sourceforge.net/formats.shtml">here</a>. The alternative is <a href="http://cruxtoolkit.sourceforge.net/mstoolkit.html">MSToolkit parser</a>. If the ProteoWizard parser fails to read your files properly, you may want to try the MSToolkit parser instead. Default = <code>pwiz</code>.</li> -->
-  <!-- <li><code>--use-z-line &lt;T|F&gt;</code> – Specify whether, when parsing an MS2 spectrum file, Crux obtains the precursor mass information from the "S" line or the "Z" line.  Default = <code>true</code>.</li> -->
-  <!-- <li><code>--txt-output &lt;T|F&gt;</code> – Output a tab-delimited results file to the output directory. Default = <code>true</code>.</li> -->
-  <!-- <li><code>--sqt-output &lt;T|F&gt;</code> – Outputs an SQT results file to the output directory. Note that if sqt-output is enabled, then compute-sp is automatically enabled and cannot be overridden. Default = <code>false</code>.</li> -->
-  <!-- <li><code>--pepxml-output &lt;T|F&gt;</code> – Output a pepXML results file to the output directory. Default = <code>false</code>.</li> -->
-  <!-- <li><code>--mzid-output &lt;T|F&gt;</code> – Output an mzIdentML results file to the output directory. Default = <code>false</code>.</li> -->
-  <!-- <li><code>--pin-output &lt;T|F&gt;</code> – Output a Percolator -->
-  <!-- input (PIN) file of DRIP features to the output directory. Default -->
-  <!-- = <code>false</code>.</li> -->
-  <!-- <li><code>--fileroot &lt;string&gt;</code> – The fileroot string will be added as a prefix to all output file names. Default = <code>&lt;empty&gt;</code>.</li> -->
-  <!-- <li><code>--output-dir &lt;string&gt;</code> – The name of the directory where output files will be created. Default = <code>crux-output</code>.</li> -->
-  <!-- <li><code>--overwrite &lt;T|F&gt;</code> – Replace existing files if true or fail when trying to overwrite a file if false. Default = <code>false</code>.</li> -->
-  <!-- <li><code>--settings-file &lt;string&gt;</code> – A file containing -->
-  <!-- search settings. Default = <code>drip.settings</code></li> -->
-  <!-- <li><code>--verbosity &lt;integer&gt;</code> – Specify the verbosity of the current processes. Each level prints the following messages, including all those at lower verbosity levels: 0-fatal errors, 10-non-fatal errors, 20-warnings, 30-information on the progress of execution, 40-more progress information, 50-debug info, 60-detailed debug info. Default = <code>30</code>.</li> -->
 </ul>
 </li>
 
