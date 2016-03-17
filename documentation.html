@@ -763,6 +763,137 @@ memory.
 <p>This will create several <code>.png</code> files, all which will
   be listed in <code>currPsms.html</code> for easy browsing.</p>
 
+<h2>Plotting PSMs
+  using <a href="https://code.google.com/archive/p/lorikeet/">Lorikeet</a></h2>
+<p>The DRIP Toolkit also supports interactive, in-browser analysis of
+  PSMs via the JQuery
+  plugin <a href="https://code.google.com/archive/p/lorikeet/">Lorikeet</a>.
+Lorikeet version 0.3.5, available for
+  download <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">here</a>,
+  is currently supported (no earlier versions are guaranteed to work
+  with the toolkit).</p>
+
+<p>For the discussion that follows, denote the directory the DRIP
+  Toolkit was unzipped as <code>DTK</code>.  To get started, download and unzip
+  <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">Lorikeet
+  version 0.3.5</a> in <code>DTK</code>.  
+
+<p>
+Invoke the python interactive shell by typing in a
+terminal
+<div class=code id="nav"><code>
+$ python
+</code></div>
+</p>
+
+<p>Given a PSM file and corresponding <code>.ms2</code> file, the
+  module <code>dtk.py</code> may be used to generate the
+  Lorikeet <code>.html</code> files as in the following example:
+<div class=code id="nav"><code>
+>>> import dtk<br>
+>>> psmFile='data/lorikeetData/cruxPercolatorMalariaTestOutput.txt'<br>
+>>> ms2="data/malariaTest.ms2"<br>
+>>> scanField = 'scan'<br>
+>>> chargeField = 'charge'<br>
+>>> peptideField = 'sequence'<br>
+>>> scoreField = 'percolator score'<br>
+>>> mods = 'C+57.0214,K+229.16293'<br>
+>>> nterm_mods = 'X+229.16293'<br>
+>>> cterm_mods = ''<br>
+>>> dtk.gen_lorikeet(psmFile,
+ms2, 'genLorikeetPlasmoCruxPlots', 'genPlasmoCruxPsms.html', mods,
+nterm_mods, cterm_mods, scanField, peptideField, chargeField, scoreField)
+</code></div>
+</p>
+
+<p>The inputs to <code>dtk.gen_lorikeet</code> in the above example
+  are detailed in the following table:
+<table id="fileFormatsTable" border="1" width="50%">
+<tr>
+<td>input variable</td>
+<td>Meaning</td>
+</tr>
+
+<tr>
+<td><code>psmFile</code></td>
+<td>tab-delimited file of PSMs with
+  fields <code>scan</code>, <code>charge</code>, <code>sequence</code>,
+  corresponding to each PSMs scan number, peptide sequence, and
+  charge, respectively.</td>
+</tr>
+
+<tr>
+<td><code>ms2</code></td>
+<td><code>.ms2</code> file searched to generate the PSM file <code>psmFile</code></td>
+</tr>
+
+<tr>
+<td><code>scanField</code></td>
+<td>Specifies PSM scan number field as <code>scan</code></td>
+</tr>
+
+<tr>
+<td><code>chargeField</code></td>
+<td>Specifies PSM charge field as <code>charge</code></td>
+</tr>
+
+<tr>
+<td><code>peptideField</code></td>
+<td>Specifies PSM peptide string field as <code>sequence</code></td>
+</tr>
+
+<tr>
+<td><code>scoreField</code></td>
+<td>Optional, specifies PSM score field as <code>percolator score</code></td>
+</tr>
+
+<tr>
+<td><code>mods</code></td>
+<td>Modifications used during search
+  (see <a href="dripDigest.html">dripDigest</a> for more info
+  regarding the specification of this parameter).  Only static mods
+  currently supported</td>
+</tr>
+
+<tr>
+<td><code>nterm_mods</code></td>
+<td>Nterminal modification (only a constant offset is supported in
+  Lorikeet, so <code>X</code> must be specified) used during search
+  (see <a href="dripDigest.html">dripDigest</a> for more info
+  regarding the specification of this parameter).  Only static nterm-mods
+  currently supported</td>
+</tr>
+
+<tr>
+<td><code>cterm_mods</code></td>
+<td>Cterminal modification (only a constant offset is supported in
+  Lorikeet, so <code>X</code> must be specified) used during search
+  (see <a href="dripDigest.html">dripDigest</a> for more info
+  regarding the specification of this parameter).  Only static cterm-mods
+  currently supported</td>
+</tr>
+
+<tr>
+<td><code>'genLorikeetPlasmoCruxPlots'</code></td>
+<td>Directory to write Lorikeet files in</td>
+</tr>
+
+<tr>
+<td><code>'genPlasmoCruxPsms.html'</code></td>
+<td>File containing one link to a Lorikeet <code>.html</code> per
+  line.  Should be written
+  to <code>$DTK/genPlasmoCruxPsms.html</code> to ensures Lorikeet
+  files are correctly loaded.</td>
+</tr>
+</table>
+</p>
+
+<p>A new directory <code>$DTK/genLorikeetPlasmoCruxPlots</code>
+containing a Lorikeet HTML file per PSM will be created, as
+will an HTML file <code>$DTK/genPlasmoCruxPsms.html</code> containing a
+link to each Lorikeet file.
+</p>
+
 </div><!--end main-->
 <hr></hr>
 
