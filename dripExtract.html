@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)http://cruxtoolkit.sourceforge.net/tide-search.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<title>dripExtract</title>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</script><style type="text/css"></style>
+<script type="text/javascript">
+  MathJax.Hub.Config({jax: ["input/TeX","output/HTML-CSS"], displayAlign: "left"});
+</script>
+<style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Hover_Arrow {position: absolute; width: 15px; height: 11px; cursor: pointer}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 2px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 2px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; color: #666666}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: 1em}
+.MathJax_MenuRadioCheck.RTL {right: 1em; left: auto}
+.MathJax_MenuLabel {padding: 2px 2em 4px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #CCCCCC; margin: 4px 1px 0px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: Highlight; color: HighlightText}
+.MathJax_Menu_Close {position: absolute; width: 31px; height: 31px; top: -15px; left: -15px}
+</style><style type="text/css">.MathJax_Preview .MJXc-math {color: inherit!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><style type="text/css">.MJXc-script {font-size: .8em}
+.MJXc-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXc-bold {font-weight: bold}
+.MJXc-italic {font-style: italic}
+.MJXc-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-largeop {font-size: 150%}
+.MJXc-largeop.MJXc-int {vertical-align: -.2em}
+.MJXc-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXc-display {display: block; text-align: center; margin: 1em 0}
+.MJXc-math span {display: inline-block}
+.MJXc-box {display: block!important; text-align: center}
+.MJXc-box:after {content: " "}
+.MJXc-rule {display: block!important; margin-top: .1em}
+.MJXc-char {display: block!important}
+.MJXc-mo {margin: 0 .15em}
+.MJXc-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXc-denom {display: inline-table!important; width: 100%}
+.MJXc-denom > * {display: table-row!important}
+.MJXc-surd {vertical-align: top}
+.MJXc-surd > * {display: block!important}
+.MJXc-script-box > *  {display: table!important; height: 50%}
+.MJXc-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXc-script-box > *:last-child > * {vertical-align: bottom}
+.MJXc-script-box > * > * > * {display: block!important}
+.MJXc-mphantom {visibility: hidden}
+.MJXc-munderover {display: inline-table!important}
+.MJXc-over {display: inline-block!important; text-align: center}
+.MJXc-over > * {display: block!important}
+.MJXc-munderover > * {display: table-row!important}
+.MJXc-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXc-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXc-mtr {display: table-row!important}
+.MJXc-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXc-mtr > .MJXc-mtd:first-child {padding-left: 0}
+.MJXc-mtr:first-child > .MJXc-mtd {padding-top: 0}
+.MJXc-mlabeledtr {display: table-row!important}
+.MJXc-mlabeledtr > .MJXc-mtd:first-child {padding-left: 0}
+.MJXc-mlabeledtr:first-child > .MJXc-mtd {padding-top: 0}
+.MJXc-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXc-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXc-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXc-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXc-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXc-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXc-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXc-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXc-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style></head>
+<body><div id="MathJax_Message" style="display: none;"></div>
+<h1>dripExtract</h1>
+<h2>Usage:</h2>
+<p><code>dripExtract [options] &lt;PSM file&gt; &lt;spectra file&gt;</code></p>
+<h2>Description:</h2>
+<p>DripExtract utilizes a DBN for Rapid Identification of Peptides
+  (DRIP) to derive features regarding PSMs. Model parameters may also be learned via
+  expectation-maximization (implemented in <code>dripTrain</code>) and
+  utilized during feature extraction. Note that the amino acid modifications used for the initial search
+  must be correctly specified to extract the relevant features.<br><br>
+  If you use features extracted using DRIP, please cite (handle this later, current work is unpublished).
+<h2>Input:</h2>
+<ul>
+  <li>
+    <code>&lt;PSM file&gt;</code> – Collection of peptide-spectrum matches (PSMs) for which to derive DRIP features for.  File must be in either tab-delimited (with dripSearch output fields), PIN, pepXML, or mzIdentML format.
+  </li>
+  <li>
+    <code>&lt;spectra file&gt;</code> – The name of the file from
+    which to parse the fragmentation spectra, in ms2 file format.
+  </li>
+</ul>
+<h2>Output:</h2>
+<p>The program writes to the file <code>dripExtract.pin</code> by
+  default. The name of the output file can be set by the user using
+  the <code>--output-file</code> option.
+</ul>
+<h2>Options:</h2>
+<ul style="list-style-type: none;">
+<li>
+<h3>Feature extraction parameters</h3>
+<ul>
+  <li>
+    <code>--output-file &lt;string&gt;</code> – Name of output file. Default = <code>dripExtract.pin</code>.
+  </li>
+  <li>
+    <code>--high-res-ms2 &lt;T|F&gt;</code> – 
+    boolean, whether the search is over high-res ms2 (high-high)
+    spectra. When this parameter is true, DRIP uses the real valued
+    masses of candidate peptides as its Gaussian means; for low-res
+    ms2 (low-low or high-low), the observed m/z measurements are much
+    less accurate so these Gaussian means are learned using training
+    data. Default = <code>False</code>.
+  </li>
+  <li>
+    <code>--num-threads &lt;integer&gt;</code> – the number of threads to run on a multithreaded CPU. If supplied value is greater than number of supported threads, defaults to the maximum number of supported threads minus one. Multithreading is not suppored for cluster use as this is typically handled by the cluster job manager. Default = <code>1</code>.
+  </li>
+  <li>
+    <code>--write-pin &lt;T|F&gt;</code> – Write output in percolator PIN format. If true and the input PSM file is not a PIN file, the relevant database digested using dripSearch must be available to access peptide-candidate-per-spectrum features {dm, absdM, enzN, enzC, Protein} (see option <code>--dripSearch-database-file</code>). Default = <code>T</code>.
+  </li>
+  <li>
+    <code>--digest-dir &lt;string&gt;</code> – Output directory of dripDigest. Default = <code>'dripDigest-output'</code>.
+  </li>
+  <li>
+    <code>--append-to-pin &lt;T|F&gt;</code> – Append DRIP features to the features of the input PIN file. Default = <code>T</code>.
+  </li>
+  <li>
+    <code>--dripTrain-file &lt;string&gt;</code> – Output of dripTrain, DRIP parameters to be used during feature extraction. Default = <code>''</code>.
+  </li>
+</ul>
+<!-- <h3>Peptide properties</h3> -->
+<!-- <ul> -->
+<!--   <li> -->
+<!--     <code>--monoisotopic-precursor &lt;T|F&gt;</code> &ndash; -->
+<!--     When computing the mass of a peptide, use monoisotopic masses -->
+<!--     rather than average masses. Default = <code>true</code>. -->
+<!--   </li> -->
+<!--   <li> -->
+<!--     <code>--precursor-window &lt;float&gt;</code> &ndash; -->
+<!--     Tolerance used for matching peptides to spectra.  Peptides must be within +/-'precursor-window' of the spectrum value. The precursor window units depend upon precursor-window-type. Default=3.<code>true</code>. -->
+<!--   </li> -->
+<!--   <li> -->
+<!--     <code>--precursor-window-type &lt;float&gt;</code> &ndash; -->
+<!--     Tolerance used for matching peptides to spectra.  Peptides must be within +/-'precursor-window' of the spectrum value. The precursor window units depend upon precursor-window-type. Default=3.<code>true</code>. -->
+<!--   </li> -->
+<!-- </ul> -->
+<!-- </li> -->
+<li>
+<h3>Amino acid modifications</h3>
+<ul>
+  <li>
+    <code>--mods-spec &lt;string&gt;</code> &ndash;
+    The general form of a modification specification has three
+    components, as exemplified by <span style="color:
+    red;">1</span><span style="color:
+    green;">STY</span>+<span style="color:
+    blue">79.966331</span>.<br>The three components are:
+    [<span style="color:
+    red;">max_per_peptide</span>]<span style="color:
+    green;">residues</span>[+/-]<span style-"color:
+    blue;">mass_change</span><br>In the example, <span style="color:
+    red;">max_per_peptide</span> is <span style="color:
+    red;">1</span>, <span style="color: green;">residues</span>
+    are <span style="color: green;">STY</span>,
+    and <span style="color: blue;">mass_change</span>
+    is <span style="color: blue;">+79.966331</span>. To specify a
+    static modification, the number preceding the amino acid must be
+    omitted; i.e., <span style="color:
+    green;">C</span>+<span style="color: blue;">57.02146</span>
+    specifies a static modification of 57.02146 Da to cysteine. Note
+    that Tide allows at most one modification per amino acid.  Also,
+    the default modification (C+57.02146) will be added to every
+    mods-spec string unless an explicit C+0 is included. Default
+    = <code>C+57.02146</code>.
+  </li>
+  <li>
+    <code>--cterm-peptide-mods-spec &lt;string&gt;</code> &ndash;
+    Specify peptide c-terminal modifications. See
+    nterm-peptide-mods-spec for syntax. Default
+    = <code>&lt;empty&gt;</code>.
+  </li>
+  <li>
+    <code>--nterm-peptide-mods-spec &lt;string&gt;</code> &ndash;
+    Specify peptide n-terminal modifications. Like --mods-spec, this
+    specification has three components, but with a slightly different
+    syntax. The <span style="color: red;">max_per_peptide</span> can
+    be either "1", in which case it defines a variable terminal
+    modification, or missing, in which case the modification is
+    static. The <span style="color: green;">residues</span> field
+    indicates which amino acids are subject to the modification, with
+    the reside <span style="color: green;">X</span> corresponding to
+    any amino acid. Finally, <span style="color:
+    blue;">added_mass</span> is defined as before. Default
+    = <code>&lt;empty&gt;</code>.
+  </li>
+  <!-- <li> -->
+  <!--   <code>--max-mods &lt;integer&gt;</code> &ndash;  -->
+  <!--   The maximum number of modifications that can be applied to a -->
+  <!--   single peptide. Default = <code>255</code>. -->
+  <!-- </li> -->
+  <!-- <li> -->
+  <!--   <code>--min-mods &lt;integer&gt;</code> &ndash;  -->
+  <!--   The minimum number of modifications that can be applied to a -->
+  <!--   single peptide. Default = <code>0</code>. -->
+  <!-- </li> -->
+</ul>
+</li>
+<!-- <li> -->
+<!-- <h3>Input and output</h3> -->
+<!-- <ul> -->
+<!--   <li> -->
+<!--     <code>--results-dir &lt;string&gt;</code> – subdirectory of -->
+<!--     current working directory (do not specify absolute path) -->
+<!--     to write results file for each job. Default = <code>dripOutput</code>. -->
+<!--   </li> -->
+<!--   <li> -->
+<!--     <code>--output-ident &lt;string&gt;</code> – output file to write -->
+<!--     both target and decoy results. Default = <code>none</code>. -->
+<!--   </li> -->
+<!--   <li> -->
+<!--   <li><code>--pin-output &lt;T|F&gt;</code> – Output a Percolator -->
+<!--   input (PIN) file of DRIP features to the output directory. Default -->
+<!--   = <code>false</code>.</li> -->
+<!--   <li><code>--settings-file &lt;string&gt;</code> – A file containing -->
+<!--   search settings. Default = <code>drip.settings</code></li> -->
+<!-- </ul> -->
+<!-- </li> -->
+
+</ul>
+<hr>
+<a href="/">Home</a>
+
+
+</body></html>
