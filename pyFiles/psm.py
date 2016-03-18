@@ -323,101 +323,6 @@ class dripPSM(object):
             print "Failed to import matplotlib, which is necessary to generate figures.  Exitting"
             exit(-1)
 
-    # def plot_drip_viterbi(self, plotname,
-    #                       xtick_increments = 100):
-    #     """ Plot PSM's DRIP Viterbi path
-    #     """
-    #     peak_colors = 'kbr'
-    #     s = self.spectrum
-    #     # x axis tick labels
-    #     lower_mz = int(math.floor(min(s.mz)/xtick_increments)*xtick_increments)
-    #     upper_mz = int(math.ceil(max(s.mz)/xtick_increments + 1)*xtick_increments)
-    #     ticks = range(lower_mz, upper_mz, xtick_increments)
-
-    #     pylab.figure()
-
-    #     pylab.xlabel('m/z', fontsize=20)
-    #     pylab.spectral()
-
-    #     # unit-normalize
-    #     max_intensity = max(s.intensity)
-    #     intensity = [intensity/max_intensity for intensity in s.intensity]
-    #     s.intensity = intensity
-
-    #     eps = 7
-    #     bheight = 0.1
-    #     yheight = 0.1
-
-    #     f = pylab.gca()
-    #     pylab.ylabel('intensity', fontsize = 20)
-    #     pylab.spectral()
-
-    #     inserted_mz = []
-    #     inserted_intensity = []
-    #     scored_bions_mz = []
-    #     scored_bions_intensity = []
-    #     scored_bions_numRes = []
-    #     scored_yions_mz = []
-    #     scored_yions_intensity = []
-    #     scored_yions_numRes = []
-
-    #     for i, (mz, intensity, ins, ion) in enumerate(zip(self.spectrum.mz, self.spectrum.intensity, 
-    #                                                       self.insertion_sequence, self.ion_sequence)):
-    #         if ins:
-    #             inserted_mz.append(mz)
-    #             inserted_intensity.append(intensity)
-    #         else:
-    #             if ion in self.yions:
-    #                 scored_yions_mz.append(mz)
-    #                 scored_yions_intensity.append(intensity)
-    #                 scored_yions_numRes.append(self.yions[ion])
-    #             else:
-    #                 assert ion in self.bions, "Non-deleted ion %d not in theoretical spectrum of PSM, exitting" % ion
-    #                 scored_bions_mz.append(mz)
-    #                 scored_bions_intensity.append(intensity)
-    #                 scored_bions_numRes.append(self.bions[ion])
-
-    #     annotate_shift = 0.1
-
-    #     # plot spectrum
-    #     pylab.vlines(inserted_mz, 0, inserted_intensity, color = '0.3' , linestyles='solid', hold = True)
-
-    #     if scored_bions_mz: # make sure scored b-ions is not empty
-    #         pylab.vlines(scored_bions_mz, 0, scored_bions_intensity, color = 'b', linestyles = 'solid', hold = True)
-    #         for i, mz, intensity in zip(scored_bions_numRes, scored_bions_mz, scored_bions_intensity):
-    #             ion_str = 'b%d' % i[0]
-    #             for c in range(i[1]):
-    #                 ion_str += '+'
-    #             pylab.annotate('%s' % ion_str, xy=(mz, intensity), xytext=(mz-eps, intensity+0.01), color='b')
-            
-    #     if scored_yions_mz: # make sure scored y-ions is not empty
-    #         pylab.vlines(scored_yions_mz, 0, scored_yions_intensity, color = 'r', linestyles = 'solid', hold = True)
-    #         for i, mz, intensity in zip(scored_yions_numRes, scored_yions_mz, scored_yions_intensity):
-    #             ion_str = 'y%d' % i[0]
-    #             for c in range(i[1]):
-    #                 ion_str += '+'
-    #             pylab.annotate('%s' % ion_str, xy=(mz, intensity), xytext=(mz-eps, intensity+0.01), color='r')
-
-    #     if scored_bions_mz:
-    #         if scored_yions_mz:
-    #             pylab.legend(('insertions', 'b-ions', 'y-ions'), loc = 'center left')
-    #         else:
-    #             pylab.legend(('insertions', 'b-ions'), loc = 'center left')
-    #     else:
-    #         if scored_yions_mz:
-    #             pylab.legend(('insertions', 'y-ions'), loc = 'center left')
-    #         else:
-    #             pylab.legend(('insertions'), loc = 'center left')
-
-    #     pylab.ylim(0, 1.1)
-    #     pylab.xlim(ticks[0], ticks[-1])
-    #     pylab.xticks(ticks)
-    #     # pylab.setp(f.get_xticklabels(), visible=False)
-
-    #     fig = matplotlib.pyplot.gcf()
-    #     fig.set_size_inches(12.5,6.5)    
-    #     pylab.savefig(plotname, dpi=100)
-
 ############### read candidate peptides written to binary
 def read_binary_peptide_tuples(s, f):
     """ Read binary records from file
@@ -1540,4 +1445,369 @@ def append_to_percolator_pin(targets, decoys,
                                               dripMeans, fields,
                                               otherFields,
                                               peptide_str, psm0.protein)
+    identFid.close()
+
+def write_percolator_pin_pepdb(targets, decoys, filename, meanFile, spec_dict,
+                               cleavage_req, target_db, decoy_db):
+    """ Write PSMs and features to file
+
+    Note: since this assumes a static set of means, this is not a general function for
+    writing output files given a set of targets and decoys.  That is, if dripSearch was run in 
+    high-res mode, then there are several sets of means specific to each searched spectrum and these
+    are necessary to calculate the DRIP features.  Any other run of dripSearch and all runs of dripExtract
+    may use this function to write their output since the set of means does not change per spectrum.
+
+    We could get rid of this mean dependency, but we would need to recalculate each PSM's theoretical spectrum,
+    including all the theoretical spectrum preprocessing to get it right.  We could do this efficiently by only 
+    calculating these quantities (i.e., the DRIP features) for the top-match PSMs per spectrum.
+    """
+
+    dripMeans = load_drip_means(meanFile)
+
+    # fields = ["SpecId","Label","ScanNr","lnrSp","deltLCn","deltCn","score","Sp","IonFrac","Mass","PepLen","Charge1","Charge2","Charge3","enzN","enzC","enzInt","lnNumSP","dm","absdM", "insertions", "deletions", "peaksScoredA", "theoPeaksUsedA", "Peptide","Proteins"]
+
+    try:
+        identFid = open(filename, "w")
+    except IOError:
+        print "Could not open file %s for writing, exitting" % output
+
+    # find maximum PSM charge
+    max_charge = 0
+    for sid, charge in targets:
+        max_charge = max(max_charge,max([psm.charge for psm in targets[sid,charge]]))
+        if (sid,charge) in decoys:
+            max_charge = max(max_charge,max([psm.charge for psm in decoys[sid,charge]]))
+
+    assert max_charge > 0, "Maximum charge for encountered PSMs is zero, exitting"
+
+    # Create list of fields to write out
+    fields = ["SpecId","Label","ScanNr",
+              "score","Mass","PepLen",
+              "dm","absdM", "Insertions","Deletions", 
+              "NumObsPeaksScored", "NumTheoPeaksUsed",
+              "SumObsIntensities", "SumScoredMzDist",
+              "enzN", "enzC"]
+    for c in range(1,max_charge+1):
+        fields.append("Charge" + str(c))
+    fields += ["Peptide","Proteins"]    
+
+    for f in fields[:-1]:
+        identFid.write('%s\t' % f)
+    identFid.write('%s\n' % fields[-1])
+
+    left_of_cleavage = cleavage_req[0]
+    right_of_cleavage = cleavage_req[1]
+    print left_of_cleavage
+    print right_of_cleavage
+
+    for sid, charge in targets:
+        s = spec_dict[sid]
+        precursor_mass = {} # dict whose keys are precursor charge, entries are precursor mass
+        for c, m in s.charge_lines:
+            precursor_mass[c] = m
+        for psm in targets[sid,charge]:
+            # add spectrum to field of psm
+            psm.add_obs_spectrum(s)
+
+            # create one hot charge vector
+            one_hot_charge = {}
+            for c in range(1,max_charge+1):
+                c_key = 'Charge' + str(c)
+                if c == charge:
+                    one_hot_charge[c_key] = 1
+                else:
+                    one_hot_charge[c_key] = 0
+
+            # digestedPep class
+            try:
+                p = target_db[psm.peptide]
+            except KeyError:
+                print "Target PSM %s not in supplied target database, exitting" % psm.peptide
+                exit(-1)
+
+            # calculate dm
+            dm = p.peptideMass - precursor_mass[charge]
+            absDm = abs(dm)
+            pep_seq = psm.peptide
+            enzN = 0
+            enzC = 0
+            if p.ntermFlanking:
+                if (p.ntermFlanking in left_of_cleavage) and (pep_seq[0] in right_of_cleavage):
+                    enzN = 1
+            if p.ctermFlanking:
+                if (pep_seq[-1] in left_of_cleavage) and (p.ctermFlanking in right_of_cleavage):
+                    enzC = 1
+
+            # form peptide for output
+            if p.ntermFlanking:
+                peptide_str = p.ntermFlanking
+            else:
+                peptide_str = '-'
+            peptide_str += '.' + psm.peptide + '.'
+            if p.ctermFlanking:
+                peptide_str += p.ctermFlanking
+            else:
+                peptide_str += '-'
+
+            write_dripPSM_to_pin(identFid, psm, 
+                                 dripMeans, fields,
+                                 dm, absDm, p.peptideMass,
+                                 enzN, enzC,
+                                 peptide_str, p.proteinName,
+                                 one_hot_charge)
+        if (sid,charge) in decoys:
+            for psm in decoys[sid,charge]:
+                # add spectrum to field of psm
+                psm.add_obs_spectrum(s)
+
+                # create one hot charge vector
+                one_hot_charge = {}
+                for c in range(1,max_charge+1):
+                    c_key = 'Charge' + str(c)
+                    if c == charge:
+                        one_hot_charge[c_key] = 1
+                    else:
+                        one_hot_charge[c_key] = 0
+
+                # digestedPep class
+                try:
+                    p = decoy_db[psm.peptide]
+                except KeyError:
+                    print "Decoy PSM %s not in supplied decoy database, exitting" % psm.peptide
+                    exit(-1)
+
+                # calculate dm
+                dm = p.peptideMass - precursor_mass[charge]
+                absDm = abs(dm)
+                pep_seq = psm.peptide
+                enzN = 0
+                enzC = 0
+                if p.ntermFlanking:
+                    if (p.ntermFlanking in left_of_cleavage) and (pep_seq[0] in right_of_cleavage):
+                        enzN = 1
+                if p.ctermFlanking:
+                    if (pep_seq[-1] in left_of_cleavage)  and (p.ctermFlanking in right_of_cleavage):
+                        enzC = 1
+
+                if p.ntermFlanking:
+                    peptide_str = p.ntermFlanking
+                else:
+                    peptide_str = '-'
+                peptide_str += '.' + psm.peptide + '.'
+                if p.ctermFlanking:
+                    peptide_str += p.ctermFlanking
+                else:
+                    peptide_str += '-'
+
+                write_dripPSM_to_pin(identFid, psm, 
+                                     dripMeans, fields,
+                                     dm, absDm, p.peptideMass,
+                                     enzN, enzC,
+                                     peptide_str, p.proteinName,
+                                     one_hot_charge)
+    identFid.close()
+
+def append_to_percolator_pin(targets, decoys, 
+                             targets0, decoys0,
+                             filename, meanFile, spec_dict):
+    """ Write PSMs and features to file
+
+    Note: since this assumes a static set of means, this is not a general function for
+    writing output files given a set of targets and decoys.  That is, if dripSearch was run in 
+    high-res mode, then there are several sets of means specific to each searched spectrum and these
+    are necessary to calculate the DRIP features.  Any other run of dripSearch and all runs of dripExtract
+    may use this function to write their output since the set of means does not change per spectrum.
+
+    Todo: we could get rid of this mean dependency, but we would need to recalculate each PSM's theoretical spectrum,
+    including all the theoretical spectrum preprocessing to get it right.  We could do this efficiently by only 
+    calculating these quantities (i.e., the DRIP features) for the top-match PSMs per spectrum.
+    """
+
+    dripMeans = load_drip_means(meanFile)
+
+    try:
+        identFid = open(filename, "w")
+    except IOError:
+        print "Could not open file %s for writing, exitting" % output
+
+    # Create list of fields to write out
+    fields = ["SpecId","Label","ScanNr",
+              "Insertions","Deletions", 
+              "NumObsPeaksScored", "NumTheoPeaksUsed",
+              "SumObsIntensities", "SumScoredMzDist"]
+    endFields = ['Peptide', 'Proteins']
+    otherFields = []
+    # Get extra fields from PIN file
+    for p in targets0:
+        otherFields = list((set(targets0[p].other.iterkeys()) - set(fields)) - set(endFields))
+        break
+
+    for f in fields:
+        identFid.write('%s\t' % f)
+    for f in otherFields:
+        identFid.write('%s\t' % f)
+    # print end fields
+    identFid.write('Peptide\tProteins\n')
+
+    for sid, charge in targets:
+        s = spec_dict[sid]
+        for psm in targets[sid,charge]:
+            # add spectrum to field of psm to calculate sum of intensities of non-inserted peaks
+            psm.add_obs_spectrum(s)
+            # hash key is (scan, peptide_string)
+            psm0 = targets0[psm.scan, psm.peptide] # since read in from PIN file, contains flanking info
+
+            peptide_str = psm0.left_flanking_aa + '.' \
+                + psm0.peptide + '.' \
+                + psm0.right_flanking_aa
+
+            write_appended_dripPSM_to_pin(identFid, psm, psm0,
+                                          dripMeans, fields,
+                                          otherFields,
+                                          peptide_str, psm0.protein)
+        if (sid,charge) in decoys:
+            for psm in decoys[sid,charge]:
+                # add spectrum to field of psm
+                psm.add_obs_spectrum(s)
+                # PSM hash key is (scan, peptide_string)
+                psm0 = decoys0[psm.scan, psm.peptide]
+
+                peptide_str = psm0.left_flanking_aa + '.' \
+                    + psm0.peptide + '.' \
+                    + psm0.right_flanking_aa
+
+                write_appended_dripPSM_to_pin(identFid, psm, psm0,
+                                              dripMeans, fields,
+                                              otherFields,
+                                              peptide_str, psm0.protein)
+    identFid.close()
+
+
+def write_drip_percolator_pin(targets0, decoys0, targets, decoys,
+                              filename, meanFile, spec_dict):
+    """ Write PSMs and features to file
+
+    drip PSM file header:
+    (0)Kind (1)Scan (2)Score (3)Peptide	
+    (4)Obs_Inserts (5)Theo_Deletes (6)Obs_peaks_scored
+    (7)Theo_peaks_used (8Sum_obs_intensities	Sum_scored_mz_dist	Charge	Flanking_nterm	Flanking_cterm	Protein_id
+
+    Note: since this assumes a static set of means, this is not a general function for
+    writing output files given a set of targets and decoys.  That is, if dripSearch was run in 
+    high-res mode, then there are several sets of means specific to each searched spectrum and these
+    are necessary to calculate the DRIP features.  Any other run of dripSearch and all runs of dripExtract
+    may use this function to write their output since the set of means does not change per spectrum.
+
+    We could get rid of this mean dependency, but we would need to recalculate each PSM's theoretical spectrum,
+    including all the theoretical spectrum preprocessing to get it right.  We could do this efficiently by only 
+    calculating these quantities (i.e., the DRIP features) for the top-match PSMs per spectrum.
+    """
+
+    dripMeans = load_drip_means(meanFile)
+
+    try:
+        identFid = open(filename, "w")
+    except IOError:
+        print "Could not open file %s for writing, exitting" % output
+
+    # find maximum PSM charge
+    max_charge = 0
+    for sid, charge in targets:
+        max_charge = max(max_charge,max([psm.charge for psm in targets[sid,charge]]))
+        if (sid,charge) in decoys:
+            max_charge = max(max_charge,max([psm.charge for psm in decoys[sid,charge]]))
+
+    assert max_charge > 0, "Maximum charge for encountered PSMs is zero, exitting"
+
+    # Create list of fields to write out
+    fields = ["SpecId","Label","ScanNr",
+              "score","Mass","PepLen",
+              "dm","absdM", "Insertions","Deletions", 
+              "NumObsPeaksScored", "NumTheoPeaksUsed",
+              "SumObsIntensities", "SumScoredMzDist",
+              "enzN", "enzC"]
+    for c in range(1,max_charge+1):
+        fields.append("Charge" + str(c))
+    fields += ["Peptide","Proteins"]    
+
+    for f in fields[:-1]:
+        identFid.write('%s\t' % f)
+    identFid.write('%s\n' % fields[-1])
+
+    for sid, charge in targets:
+        s = spec_dict[sid]
+        precursor_mass = {} # dict whose keys are precursor charge, entries are precursor mass
+        for c, m in s.charge_lines:
+            precursor_mass[c] = m
+        for psm in targets[sid,charge]:
+            # add spectrum to field of psm
+            psm.add_obs_spectrum(s)
+
+            psm0 = targets0[psm.scan, psm.peptide] # since read in from PIN file, contains flanking info
+
+            peptide_str = psm0.left_flanking_aa + '.' \
+                + psm0.peptide + '.' \
+                + psm0.right_flanking_aa
+
+            # create one hot charge vector
+            one_hot_charge = {}
+            for c in range(1,max_charge+1):
+                c_key = 'Charge' + str(c)
+                if c == charge:
+                    one_hot_charge[c_key] = 1
+                else:
+                    one_hot_charge[c_key] = 0
+
+            # calculate dm
+            # dm = p.peptideMass - precursor_mass[charge]
+            # absDm = abs(dm)
+
+            dm = 0
+            absDm = 0
+            pMass = 0
+            pep_seq = psm.peptide
+
+            write_dripPSM_to_pin(identFid, psm, 
+                                 dripMeans, fields,
+                                 dm, absDm, pMass,
+                                 enzN, enzC,
+                                 peptide_str, p.proteinName,
+                                 one_hot_charge)
+
+        if (sid,charge) in decoys:
+            for psm in decoys[sid,charge]:
+                # add spectrum to field of psm
+                psm.add_obs_spectrum(s)
+
+                # create one hot charge vector
+                one_hot_charge = {}
+                for c in range(1,max_charge+1):
+                    c_key = 'Charge' + str(c)
+                    if c == charge:
+                        one_hot_charge[c_key] = 1
+                    else:
+                        one_hot_charge[c_key] = 0
+
+                # PSM hash key is (scan, peptide_string)
+                psm0 = decoys0[psm.scan, psm.peptide]
+
+                peptide_str = psm0.left_flanking_aa + '.' \
+                    + psm0.peptide + '.' \
+                    + psm0.right_flanking_aa
+
+                # calculate dm
+                # dm = p.peptideMass - precursor_mass[charge]
+                # absDm = abs(dm)
+
+                dm = 0
+                absDm = 0
+                pMass = 0
+                pep_seq = psm.peptide
+
+                write_dripPSM_to_pin(identFid, psm, 
+                                     dripMeans, fields,
+                                     dm, absDm, pMass,
+                                     enzN, enzC,
+                                     peptide_str, p.proteinName,
+                                     one_hot_charge)
     identFid.close()

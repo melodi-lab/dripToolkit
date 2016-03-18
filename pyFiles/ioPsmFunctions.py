@@ -366,6 +366,9 @@ def load_psms(filename, stripSeqStringMassOffsets = True):
         if i not in psmKeys:
             keys.append(i)
 
+    auxKeys = ["Flanking_nterm", "Flanking_cterm", "Protein_id"]
+    auxKeySet = set(auxKeys)
+
     for sid, rows in itertools.groupby(reader, lambda r: int(r[sidKey])):
         for p in rows:
             kind = p["Kind"].lower()
@@ -376,9 +379,12 @@ def load_psms(filename, stripSeqStringMassOffsets = True):
                 exit(-1)
 
             el = {}
+            currAux = {}
             if keys:
                 for k in keys:
                     el[k] = p[k]
+                    if k in auxKeySet:
+                        currAux[k] = p[k]
             
             if stripSeqStringMassOffsets:
                 # strip any mass offsets (variable or static) denoted in the peptide string
@@ -392,6 +398,11 @@ def load_psms(filename, stripSeqStringMassOffsets = True):
                      p["Kind"],
                      int(p["Charge"]),
                      el)
+
+            if currAux:
+                el.left_flanking_aa = currAux["Flanking_nterm"]
+                el.right_flanking_aa = currAux["Flanking_cterm"]
+                el.protein = currAux["Protein_id"]
 
             if kind=='t' or kind=='target':
                 if (sid, c) in targets:

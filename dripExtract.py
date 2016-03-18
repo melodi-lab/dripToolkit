@@ -57,7 +57,7 @@ from pyFiles.shard_spectra import (calc_minMaxMz,
 from pyFiles.process_vitvals import parse_dripExtract, write_psm_ins_dels
 from subprocess import call, check_output
 
-debug=1
+debug=0
 
 # set stdout and stderr for subprocess
 # stdo = open(os.devnull, "w")
@@ -202,16 +202,6 @@ def make_drip_data_highres(args, spectra, stdo, stde):
     ctermMods, ctermVarMods = parse_var_mods(args.cterm_peptide_mods_spec, False)
 
     varModKey = "Var_mod_seq"
-    # # parse modifications
-    # mods = df.parse_mods(args.mods_spec, True)
-    # # print "mods:"
-    # # print mods
-    # ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
-    # # print "n-term mods:"
-    # # print ntermMods
-    # ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
-    # # print "c-term mods:"
-    # # print ctermMods
 
     if not args.append_to_pin:
         target,decoy,num_psms = load_psms(args.psm_file)
@@ -396,17 +386,6 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
     ctermMods, ctermVarMods = parse_var_mods(args.cterm_peptide_mods_spec, False)
 
     varModKey = "Var_mod_seq"
-
-    # # parse modifications
-    # mods = df.parse_mods(args.mods_spec, True)
-    # # print "mods:"
-    # # print mods
-    # ntermMods = df.parse_mods(args.nterm_peptide_mods_spec, False)
-    # # print "n-term mods:"
-    # # print ntermMods
-    # ctermMods = df.parse_mods(args.cterm_peptide_mods_spec, False)
-    # # print "c-term mods:"
-    # # print ctermMods
 
     # load means
     dripMeans = load_drip_means(args.learned_means)
@@ -967,18 +946,37 @@ if __name__ == '__main__':
     ####################################################################################
 
     if args.write_pin:
-        if args.append_to_pin:
+        if args.append_to_pin: # File is in PIN format, append DRIP features
             targets0,decoys0 = load_pin_return_dict(args.psm_file)
             # merge the loaded PSM features with DRIP
             psm.append_to_percolator_pin(targets, decoys, 
                                          targets0, decoys0,
                                          args.output, 
                                          args.mean_file, spec_dict)
-        else: # 
-            psm.write_output(targets, decoys, args.output, args.mean_file, spec_dict)
-            # todo: make sure Protein_id field is present in file, since protein is a mandatory field
-            # in the pin file
+        else:  # File not in PIN format, write out results as a PIN file
+            # load original PSMs
+            target0, decoy0, _ = load_psms(args.psm_file)
+            # can only do this if Protein_id field is present in file, since protein is a mandatory PIN field
+            # make sure that Protein_id exists in original PSM header
+            for i in target0[target0.keys()[0]]:
+                t = i
+                break
+            assert 'Protein_id' in t.other, "Protein_id field necessary to write PIN output"
 
+            # make dictionaries of original PSMs with keys (sid, peptide string)
+            t0 = {}
+            for sid, charge in target0:
+                for p in target0[sid, charge]:
+                    t0[sid, p.peptide] = p
+            d0 = {}
+            for sid, charge in decoy0:
+                for d in decoy0[sid, charge]:
+                    d0[sid, d.peptide] = d
+
+            psm.append_to_percolator_pin(targets, decoys, 
+                                         t0, d0,
+                                         args.output, 
+                                         args.mean_file, spec_dict)
     else:
         psm.write_output(targets, decoys, args.output, args.mean_file, spec_dict)
 
