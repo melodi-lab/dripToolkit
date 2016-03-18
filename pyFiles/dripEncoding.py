@@ -727,13 +727,6 @@ def make_master_parameters_lowres(options, dripMeans):
     gauss_file.write('%component_number dimensionality type name mean_name covariance_name\n\n')
     mixture_file.write('%mixture_number dimensionality name num_components dpmf components\n\n')
 
-    # for i, ind in enumerate(ions):
-    #     ion = dripMeans[ind]
-    #     mean_file.write('%d mean%d 1 %.8f\n' % (i, i, ion))
-    #     gauss_file.write('%d 1 0 %s%d mean%d %s\n' % (i, options.gaussian_component_name, i, i, options.covar_name))
-    #     mixture_file.write('%d 1 %s%d 1 %s %s%d\n' % (i, options.mixture_name, i, options.dpmf_name, options.gaussian_component_name, i))
-    #     collection_file.write('%s%d\n' % (options.mixture_name, i))
-
     for i, ind in enumerate(ions):
         ion = dripMeans[ind]
         meanName = 'mean' + str(ind)
@@ -772,6 +765,100 @@ def return_b_y_ions(peptide, charge, mods = {},
     yion = {}
     ntermOffset = 0
     ctermOffset = 0
+
+    p = peptide.seq
+    # check n-/c-term amino acids for modifications
+    if p[0] in ntermMods:
+        ntermOffset = ntermMods[p[0]]
+    if p[-1] in ctermMods:
+        ctermOffset = ctermMods[p[0]]
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        bOffset = cf*mass_h
+        offset = ntermOffset
+        for b, aa in zip(ntm[1:-1], peptide.seq[:-1]):
+            if aa in mods:
+                offset += mods[aa]
+            ion = (b+offset+bOffset)/cf
+            bions[ion_to_index_map[ion]] = ion
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        yOffset = mass_h2o + cf*mass_h
+        offset = ctermOffset
+        for y, aa in zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:])):
+            if aa in mods:
+                offset += mods[aa]
+            ion = (y+offset+yOffset)/cf
+            yions[ion_to_index_map[ion]] = ion
+
+    return bions, yions
+
+def return_b_y_ions_var_mods(peptide, charge, 
+                             mods = {}, ntermMods = {}, ctermMods = {}, 
+                             ion_to_index_map = {}, 
+                             varMods = {}, varNtermMods = {}, varCtermMods = {}, 
+                             varModSequence = ''):
+    """Create sets of b- and y-ions
+
+    Arguments:
+    Peptide = current peptide, instance of object protein.Peptide
+    charge = current charge, calculate quantities of mass / charge
+    ntermStatMods = dictionary of static modifications specific to the n-terminus
+    ctermStatMods = dictionary of static modifications specific to the c-terminus
+
+    ion_to_index_map = mapping from ion values (floats, drip mean values) to indices in the global collection of means.  A python dictionary with keys ions/drip mean values and values indices in the global collection of means
+
+    Returns:
+        Dictionaries of b- and y-ions where the keys are indices of the
+        interleaved spectra and the elements are the floating point values
+
+    """
+    (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic')
+    bions = {}
+    yion = {}
+    ntermOffset = 0
+    ctermOffset = 0
+
+    p = peptide.seq
+    # check n-/c-term amino acids for modifications
+    if p[0] in ntermMods:
+        ntermOffset = ntermMods[p[0]]
+    elif p[0] in ntermVarMods:
+        if varModSequence[0] == '2': # denotes an nterm variable modification
+            ntermOffset = ntermVarMods[p[0]][1]
+    if p[-1] in ctermMods:
+        ctermOffset = ctermMods[p[0]]
+    elif p[-1] in ctermVarMods:
+        if varModSequence[-1] == '3': # denotes a cterm variable modification
+            ctermOffset = ctermVarMods[p[-1]][1]
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        bOffset = cf*mass_h
+        offset = ntermOffset
+        for ind, (b, aa) in enumerate(zip(ntm[1:-1], peptide.seq[:-1])):
+            if aa in mods:
+                offset += mods[aa]
+            elif aa in varMods:
+                if varModSequence[ind]=='1':
+                    offset += varMods[aa][1]
+            ion = (b+offset+bOffset)/cf
+            bions[ion_to_index_map[ion]] = ion
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        yOffset = mass_h2o + cf*mass_h
+        offset = ctermOffset
+        for ind, (y, aa) in enumerate(zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:]))):
+            if aa in mods:
+                offset += mods[aa]
+            elif aa in varMods:
+                if varModSequence[ind]=='1':
+                    offset += varMods[aa][1]
+            ion = (y+offset+yOffset)/cf
+            yions[ion_to_index_map[ion]] = ion
 
     p = peptide.seq
     # check n-/c-term amino acids for modifications
@@ -853,6 +940,75 @@ def return_b_y_ions_lowres(peptide, charge, mods = {},
                 offset += mods[aa]
             ion = (y+int(round(offset))+yOffset)/cf
             yions[int(round(ion))] = (numRes, c)
+            numRes += 1
+
+    return bions, yions
+
+def return_b_y_ions_lowres_var_mods(peptide, charge, 
+                                    mods = {}, ntermMods = {}, ctermMods = {},
+                                    ion_to_index_map = {}, 
+                                    varMods = {}, varNtermMods = {}, varCtermMods = {},
+                                    varModSequence = ''):
+    """Create vector of interleaved b and y ions
+
+    Arguments:
+    Peptide = current peptide, instance of object protein.Peptide
+    charge = current charge, calculate quantities of mass / charge
+    ntermStatMods = dictionary of static modifications specific to the n-terminus
+    ctermStatMods = dictionary of static modifications specific to the c-terminus
+
+    Returns:
+        Vector of interleaved b and y ions
+
+    """
+    mass_op = lambda m: int(math.floor(m))
+    (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic', mass_op)
+    bions = {}
+    yions = {}
+    ntermOffset = 0
+    ctermOffset = 0
+
+    p = peptide.seq
+    # check n-/c-term amino acids for modifications
+    if p[0] in ntermMods:
+        ntermOffset = ntermMods[p[0]]
+    elif p[0] in ntermVarMods:
+        if varModSequence[0] == '2': # denotes an nterm variable modification
+            ntermOffset = ntermVarMods[p[0]][1]
+    if p[-1] in ctermMods:
+        ctermOffset = ctermMods[p[0]]
+    elif p[-1] in ctermVarMods:
+        if varModSequence[-1] == '3': # denotes a cterm variable modification
+            ctermOffset = ctermVarMods[p[-1]][1]
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        bOffset = int(round(cf*mass_h))
+        offset = ntermOffset
+        numRes = 1
+        for ind, (b, aa) in enumerate(zip(ntm[1:-1], peptide.seq[:-1])):
+            if aa in mods:
+                offset += mods[aa]
+            elif aa in varMods:
+                if varModSequence[ind]=='1':
+                    offset += varMods[aa][1]
+            ion = int(round(float(b+int(round(offset))+bOffset)/cf))
+            bions[ion] = (numRes, c)
+            numRes += 1
+
+    for c in range(1,max(charge,2)):
+        cf = float(c)
+        yOffset = int(round(mass_h2o + cf*mass_h))
+        offset = ctermOffset
+        numRes = 1
+        for ind, (y, aa) in enumerate(zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:]))):
+            if aa in mods:
+                offset += mods[aa]
+            elif aa in varMods:
+                if varModSequence[ind]=='1':
+                    offset += varMods[aa][1]
+            ion = int(round((y+int(round(offset))+yOffset)/cf))
+            yions[ion] = (numRes, c)
             numRes += 1
 
     return bions, yions

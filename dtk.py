@@ -40,6 +40,8 @@ from pyFiles.dripEncoding import (create_drip_structure,
                                   make_master_parameters_lowres,
                                   interleave_b_y_ions,
                                   interleave_b_y_ions_lowres,
+                                  interleave_b_y_ions_var_mods,
+                                  interleave_b_y_ions_lowres_var_mods,
                                   filter_theoretical_peaks,
                                   filter_theoretical_peaks_lowres,
                                   load_drip_means)
@@ -129,25 +131,33 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
               highResMs2 = False,
               dripLearnedMeans = 'dripLearned.means',
               dripLearnedCovars = 'dripLearned.covars',
-              mods = '', ntermMods = '', ctermMods = ''):
+              mods = '', ntermMods = '', ctermMods = '',
+              precursor_filter = False, 
+              high_res_gauss_dist = 0.05):
     """
     """
-    # parse modifications
-    mods = df.parse_mods(mods, True)
-    ntermMods = df.parse_mods(ntermMods, False)
-    ctermMods = df.parse_mods(ctermMods, False)
-
     # initialize arguments for dripExtract
     args = dripExtractParams(psmFile, spectrumFile, 'all', 
                              mods, ntermMods, ctermMods, 
                              highResMs2, 
                              dripLearnedMeans, dripLearnedCovars)
 
+    mods, varMods = parse_var_mods(mods, True)
+    ntermMods, ntermVarMods = parse_var_mods(ntermMods, False)
+    ctermMods, ctermVarMods = parse_var_mods(ctermMods, False)
+
+    varModKey = "Var_mod_seq"
+
     stde = open('gmtk_err', "w")
     # stdo = sys.stdout
     stdo = stde
 
-    args.normalize = 'top300TightSequest'
+    args.precursor_filter = False
+    args.high_res_gauss_dist = high_res_gauss_dist
+    if precursor_filter: 
+        args.normalize = 'top300TightSequest'
+    else:
+        args.normalize = 'top300Sequest'
 
     t, d, spectra0 = runDripExtract(args, stdo, stde)
     
@@ -170,15 +180,35 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
         dripMeans = {}
         for sid, c in t:
             p = t[sid,c]
-            bNy = interleave_b_y_ions(Peptide(p.peptide), c, mods,
-                                      ntermMods, ctermMods)
+            pep = p.peptides
+            if varMods or ntermVarMods or ctermVarMods:
+                varModSequence = p.other[varModKey]
+                bNy = interleave_b_y_ions_var_mods(Peptide(pep), charge, 
+                                                   mods, ntermMods, ctermMods,
+                                                   varMods, ntermVarMods, ctermVarMods,
+                                                   varModSequence)
+            else:
+                bNy = interleave_b_y_ions(Peptide(pep), charge, 
+                                          mods, ntermMods, ctermMods)
+            # bNy = interleave_b_y_ions(Peptide(p.peptide), c, mods,
+            #                           ntermMods, ctermMods)
             filter_theoretical_peaks(bNy, minMz, maxMz, 0.1)
             for i, ion in enumerate(bNy):
                 dripMeans[i] = ion
         for sid, c in d:
             p = d[sid,c]
-            bNy = interleave_b_y_ions(Peptide(p.peptide), c, mods,
-                                      ntermMods, ctermMods)
+            pep = p.peptide
+            if varMods or ntermVarMods or ctermVarMods:
+                varModSequence = d.other[varModKey]
+                bNy = interleave_b_y_ions_var_mods(Peptide(pep), charge, 
+                                                   mods, ntermMods, ctermMods,
+                                                   varMods, ntermVarMods, ctermVarMods,
+                                                   varModSequence)
+            else:
+                bNy = interleave_b_y_ions(Peptide(pep), charge, 
+                                          mods, ntermMods, ctermMods)
+            # bNy = interleave_b_y_ions(Peptide(p.peptide), c, mods,
+            #                           ntermMods, ctermMods)
             filter_theoretical_peaks(bNy, minMz, maxMz, 0.1)
             for i, ion in enumerate(bNy):
                 dripMeans[i] = ion
@@ -193,18 +223,32 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
         for p in t[sid,c]:
             p.add_obs_spectrum(s)
             p.calculate_drip_features(dripMeans)
+            if varMods or ntermVarMods or ctermVarMods:
+                varModSequence = p.other[varModKey]
+            else:
+                varModSequence = ''
+
             p.calc_by_sets(c, mods,
                            ntermMods, ctermMods, highResMs2, 
-                           ion_to_index_map)
+                           ion_to_index_map,
+                           varMods, ntermVarMods, ctermVarMods,
+                           varModSequence)
         all_psms.append(p)
     for sid, c in d:
         s = spectra[sid]
         for p in d[sid,c]:
             p.add_obs_spectrum(s)
             p.calculate_drip_features(dripMeans)
+            if varMods or ntermVarMods or ctermVarMods:
+                varModSequence = p.other[varModKey]
+            else:
+                varModSequence = ''
+
             p.calc_by_sets(c, mods,
                            ntermMods, ctermMods, highResMs2, 
-                           ion_to_index_map)
+                           ion_to_index_map,
+                           varMods, ntermVarMods, ctermVarMods,
+                           varModSequence)
         all_psms.append(p)
 
     fid = open(plotList, "w")

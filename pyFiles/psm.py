@@ -32,7 +32,7 @@ except ImportError:
 
 
 from pyFiles.peptide import Peptide
-from pyFiles.dripEncoding import load_drip_means, return_b_y_ions, return_b_y_ions_lowres
+from pyFiles.dripEncoding import load_drip_means, return_b_y_ions, return_b_y_ions_lowres, return_b_y_ions_var_mods, return_b_y_ions_lowres_var_mods
 
 validPeps = set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')-set('JOBZUX')
 class PSM(object):
@@ -174,19 +174,36 @@ class dripPSM(object):
 
     def calc_by_sets(self, c,
                      mods = {}, ntermMods = {}, ctermMods = {},
-                     highResMs2 = False, ion_to_index_map = {}):
+                     highResMs2 = False, ion_to_index_map = {}, 
+                     varMods = {}, varNtermMods = {}, varCtermMods = {},
+                     varModSequence = ''):
         """ Used by dripToolKit for plotting purposes; 
             the sequences of b- and y-ions must be recomputed to tell
             which set each fragment ion belongs to
         """
-        if highResMs2:
-            bions, yions = return_b_y_ions(Peptide(self.peptide), c, mods,
-                                           ntermMods, ctermMods,
-                                           ion_to_index_map)
+        if varMods or ntermVarMods or ctermVarMods:
+            assert varModSequence, "Variable modifications enyme options specified, but string indicating which amino acids were var mods not supplied.  Exitting"
+            if highResMs2:
+                bions, yions = return_b_y_ions_var_mods(Peptide(self.peptide), c, 
+                                                        mods, ntermMods, ctermMods,
+                                                        ion_to_index_map,
+                                                        varMods, varNtermMods, varCtermMods,
+                                                        varModSequence)
+            else:
+                bions, yions = return_b_y_ions_lowres_var_mods(Peptide(self.peptide), c, 
+                                                               mods, ntermMods, ctermMods,
+                                                               ion_to_index_map,
+                                                               varMods, varNtermMods, varCtermMods,
+                                                               varModSequence)
         else:
-            bions, yions = return_b_y_ions_lowres(Peptide(self.peptide), c, mods,
-                                                  ntermMods, ctermMods,
-                                                  ion_to_index_map)
+            if highResMs2:
+                bions, yions = return_b_y_ions(Peptide(self.peptide), c, mods,
+                                               ntermMods, ctermMods,
+                                               ion_to_index_map)
+            else:
+                bions, yions = return_b_y_ions_lowres(Peptide(self.peptide), c, mods,
+                                                      ntermMods, ctermMods,
+                                                      ion_to_index_map)
 
         self.bions = bions
         self.yions = yions
