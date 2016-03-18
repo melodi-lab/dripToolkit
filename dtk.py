@@ -560,7 +560,9 @@ def percolatorPsms_gen_lorikeet(psmFile, spectrumFile,
 def psm(p, s0, c = 2, highResMs2 = False,
         dripLearnedMeans = 'dripLearned.means',
         dripLearnedCovars = 'dripLearned.covars',
-        mods = '', ntermMods = '', ctermMods = ''):
+        mods = '', ntermMods = '', ctermMods = '', varModSequence = '',
+        precursor_filter = False, 
+        high_res_gauss_dist = 0.05):
     """ Inputs:
                p = peptide string
                s = observed spectrum, instance of class MS2Spectrum
@@ -576,12 +578,15 @@ def psm(p, s0, c = 2, highResMs2 = False,
     sid = s.spectrum_id
 
     # parse modifications
-    mods = df.parse_mods(mods, True)
-    ntermMods = df.parse_mods(ntermMods, False)
-    ctermMods = df.parse_mods(ctermMods, False)
+    mods, varMods = parse_var_mods(mods, True)
+    ntermMods, ntermVarMods = parse_var_mods(ntermMods, False)
+    ctermMods, ctermVarMods = parse_var_mods(ctermMods, False)
 
-    # set observed spectrum preprocessing
-    normalize = 'top300TightSequest'
+    if precursor_filter: 
+        normalize = 'top300TightSequest'
+    else:
+        normalize = 'top300Sequest'
+
     preprocess = pipeline(normalize)
     preprocess(s)
 
@@ -595,7 +600,6 @@ def psm(p, s0, c = 2, highResMs2 = False,
 
     max_obs_mass = 2001
 
-    # dirBase = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
     dirBase = 'dtk'
 
     # output_dir = os.path.abspath('dripEncode_' + dirBase)
@@ -615,15 +619,29 @@ def psm(p, s0, c = 2, highResMs2 = False,
 
     if not highResMs2:
         dripMeans = load_drip_means(dripLearnedMeans)
-        bNy = interleave_b_y_ions_lowres(Peptide(p), c, mods,
-                                         ntermMods, ctermMods)
+        if varMods or ntermVarMods or ctermVarMods:
+            assert varModSequence, "Variable mod enzyme options specified, but empty string denoting which amino acids are var mods supplied.  Exitting"
+            bNy = interleave_b_y_ions_lowres_var_mods(Peptide(p), c, 
+                                                      mods, ntermMods, ctermMods, 
+                                                      varMods, varNtermMods, varCtermMods, 
+                                                      varModSequence)
+        else:
+            bNy = interleave_b_y_ions_lowres(Peptide(p), c, mods,
+                                             ntermMods, ctermMods)
         l = len(bNy)
         filter_theoretical_peaks_lowres(bNy, 
                                         dripMeans, s.mz[0], s.mz[-1])
     else:
         # calculate b- and y-ions, filter peaks outside of spectrum range
-        bNy = interleave_b_y_ions(Peptide(p), c, mods,
-                                  ntermMods, ctermMods)
+        if varMods or ntermVarMods or ctermVarMods:
+            assert varModSequence, "Variable mod enzyme options specified, but empty string denoting which amino acids are var mods supplied.  Exitting"
+            bNy = interleave_b_y_ions_var_mods(Peptide(p), c, 
+                                               mods, ntermMods, ctermMods,
+                                               varMods, varNtermMods, varCtermMods,
+                                               varModSequence)
+        else:
+            bNy = interleave_b_y_ions(Peptide(p), c, mods,
+                                      ntermMods, ctermMods)
         l = len(bNy)
         filter_theoretical_peaks(bNy, s.mz[0], s.mz[-1], 0.1)
         # now construct means based on this
@@ -669,7 +687,8 @@ def psm(p, s0, c = 2, highResMs2 = False,
     # create structure and master files then triangulate
     try:
         create_drip_structure(highResMs2, args.structure_file, 
-                              max_obs_mass)
+                              max_obs_mass, False, False,
+                              high_res_gauss_dist)
     except:
         print "Could not create DRIP structure file %s, exitting" % args.structure_file
         exit(-1)
@@ -694,7 +713,8 @@ def psm(p, s0, c = 2, highResMs2 = False,
 
     try:
         write_covar_file(highResMs2, args.covar_file, 
-                         dripLearnedCovars)
+                         dripLearnedCovars, True,
+                         high_res_gauss_dist)
     except:
         print "Could not create covariance file %s, exitting" % args.covar_file
         exit(-1)
@@ -733,7 +753,9 @@ def psm(p, s0, c = 2, highResMs2 = False,
     t.calculate_drip_features(dripMeans)
     t.calc_by_sets(c, mods,
                    ntermMods, ctermMods, highResMs2, 
-                   ion_to_index_map)
+                   ion_to_index_map,
+                   varMods, ntermVarMods, ctermVarMods,
+                   varModSequence)
     return t
         
 if __name__ == '__main__':
