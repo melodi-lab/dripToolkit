@@ -19,12 +19,15 @@ import collections
 from pyFiles.psm import PSM
 
 def load_psm_for_lorikeet(filename, 
-                          scanField, peptideField, 
+                          scanField, 
+                          peptideField, 
                           chargeField,
-                          scoreField):
+                          scoreField,
+                          varModStringField):
     """ filename - general tab delimited file with header containing field
                    scanField - scan ID number
                    peptideField - peptide string
+                   chargeField - PSM charge
                    scoreField (optional) - PSM score
 
     Output:
@@ -56,11 +59,22 @@ def load_psm_for_lorikeet(filename,
         except TypeError:
             print "%s not valid header field, exitting" % chargeField
 
-        if sid in max_psms:
-            if curr_score > max_psms[sid][2]:
-                max_psms[sid] = (sid, peptide, curr_score, charge)
+        if varModStringField:
+            try:
+                varModString = psm[varModStringField]
+            except TypeError:
+                print "%s not valid header field, exitting" % varModStringField
+            if sid in max_psms:
+                if curr_score > max_psms[sid][2]:
+                    max_psms[sid] = (sid, peptide, curr_score, charge, varModString)
+            else:
+                max_psms[sid] = (sid, pep_sequence, curr_score, charge, varModString)
         else:
-            max_psms[sid] = (sid, pep_sequence, curr_score, charge)
+            if sid in max_psms:
+                if curr_score > max_psms[sid][2]:
+                    max_psms[sid] = (sid, peptide, curr_score, charge)
+            else:
+                max_psms[sid] = (sid, pep_sequence, curr_score, charge)
     f.close()
 
     return max_psms

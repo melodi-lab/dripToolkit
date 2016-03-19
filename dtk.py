@@ -275,8 +275,7 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
 
 def write_lorikeet_file(psm, spec, filename,
                         mods = {}, nterm_mods = 0, cterm_mods = 0,
-                        var_mods = {},
-                        var_mod_incides = {},
+                        var_mod_indices = {},
                         title = '',
                         width = '', height = '',
                         ms1scanLabel = ''):
@@ -334,7 +333,7 @@ $(document).ready(function () {
     print >> html_file, "								charge: %d," % charge
     print >> html_file, "								precursorMz: %f," % spec.precursor_mz
     print >> html_file, "								fileName:'%s'," % (basename)
-    if var_mods:
+    if var_mod_tuples:
         print >> html_file, "								variableMods: varMods,"
     if mods:
         print >> html_file, "								staticMods: staticMods,"
@@ -350,11 +349,11 @@ $(document).ready(function () {
     print >> html_file, "var sequence = \"%s\";" % peptide
 
     # print out variable mods
-    if var_mods:
+    if var_mod_tuples:
         print >> html_file, "var varMods = [];"
         ind = 0
-        for aa in var_mods:
-            print >> html_file, "varMods[%d]  = {index: %d, modMass: %f, aminoAcid: \"%s\"};" % (ind, var_mod_indices[aa], var_mods[aa], aa)
+        for i, aa, varModShift in var_mod_tuples:
+            print >> html_file, "varMods[%d]  = {index: %d, modMass: %f, aminoAcid: \"%s\"};" % (ind, i, varModShift, aa)
             ind += 1
     if mods:
         print >> html_file, "var staticMods = [];"
@@ -397,6 +396,7 @@ def gen_lorikeet(psmFile, spectrumFile,
                  peptideField = 'sequence',
                  chargeField = 'charge',
                  scoreField = 'score',
+                 varModStringField = '',
                  cMod = True):
     """ Generate html files for Lorikeet plugin
     """
@@ -408,22 +408,20 @@ def gen_lorikeet(psmFile, spectrumFile,
     if cMod: # will typically be true
         if 'C' not in mods:
             mods['C'] = 57.021464
-    
+
     # lorikeet only supports a single static mod to the n-terminus
     if nterm_mods:
         nm = []
         for aa in allPeps:
             if aa not in nterm_mods:
-                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift for using X"
+                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift using X"
                 print "Exitting"
                 exit(-1)
-
             nm.append(nterm_mods[aa])
         if len(set(nm)) > 1:
             print "different n-teriminal shifts supplied for different amino acids, Lorikeet only supports a single constant shift to the n-terminus."
             print "Exitting"
             exit(-1)
-
         nterm_mods = nm[0]
 
     # lorikeet only supports a single static mod to the c-terminus
@@ -431,21 +429,19 @@ def gen_lorikeet(psmFile, spectrumFile,
         cm = []
         for aa in allPeps:
             if aa not in cterm_mods:
-                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift for using X"
+                print "Lorikeet only supports a single constant shift to the n-terminus, please specify only one n-terminal shift using X"
                 print "Exitting"
                 exit(-1)
-
             cm.append(cterm_mods[aa])
         if len(set(cm)) > 1:
             print "different n-teriminal shifts supplied for different amino acids, Lorikeet only supports a single constant shift to the n-terminus."
             print "Exitting"
             exit(-1)
-
         cterm_mods = cm[0]                
         
     # load Percolator PSMs
     t = load_psm_for_lorikeet(psmFile, scanField, peptideField,
-                              chargeField, scoreField)
+                              chargeField, scoreField, varModStringField)
     # load .ms2 spectra
     spectra, _, _, _ = load_spectra_minMaxMz(spectrumFile)
 
@@ -465,10 +461,30 @@ def gen_lorikeet(psmFile, spectrumFile,
 
         charge = psm[3]
 
+        varModTuple = []
+        if varModStringField:
+            varModString = psm[4]
+            for ind, (aa, v) in enumerate(zip(psm[1], varModString)):
+                l = int(v)
+                if l:
+                    if l == 1:
+                        assert aa in var_mods, "Var mod string denotes variable mod %c not supported by variable mod enzyme settings" % aa
+                        varModShift = var_mods[aa][1])
+                        varModTuple.append(ind+1, aa, varModShift)
+                    elif l == 2:
+                        assert aa in cterm_var_mods, "Nterm var mod string denotes nterm var mod %c not supported by nterm var mod enzyme settings" % aa
+                        varModShift = cterm_var_mods[aa][1])
+                        varModTuple.append(ind+1, aa, varModShift)
+                    elif l == 3:
+                        assert aa in nterm_var_mods, "Nterm var mod string denotes nterm var mod %c not supported by nterm var mod enzyme settings" % aa
+                        varModShift = nterm_var_mods[aa][1])
+                        varModTuple.append(ind+1, aa, varModShift)
+
         filename = 'scan' + str(sid) + '-' + psm[1] + '-ch' + str(charge) + '.html'
         filename = os.path.join(outputDirectory,filename)
         write_lorikeet_file(psm, spec, filename, 
-                            mods, nterm_mods, cterm_mods)
+                            mods, nterm_mods, cterm_mods, 
+                            varModTuple)
         fid.write("<a href=\"%s\">Scan %d, %s, Charge %d</a><br>\n"  %
                   (filename, sid, psm[1], charge))
     fid.close()
