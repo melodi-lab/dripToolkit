@@ -164,7 +164,7 @@ function trainTestRecalibrate {
 function dripSearchHighres {
     # digest directory
     ./dripDigest.py  \
-    	--fasta /s0/halloj3/samplePlasmodium/sample-malaria/plasmo_Pfalciparum3D7_NCBI.fasta \
+    	--fasta data/plasmo_Pfalciparum3D7_NCBI.fasta \
     	--min-length 7 \
     	--custom-enzyme '[K]|[X]' \
     	--mods-spec 'C+57.0214,K+229.16293' \
@@ -191,7 +191,7 @@ function dripSearchHighres {
 function dripSearchHighresVarMods {
     # digest directory
     ./dripDigest.py  \
-    	--fasta /s0/halloj3/samplePlasmodium/sample-malaria/plasmo_Pfalciparum3D7_NCBI.fasta \
+    	--fasta data/plasmo_Pfalciparum3D7_NCBI.fasta \
     	--min-length 7 \
     	--custom-enzyme '[K]|[X]' \
     	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \
