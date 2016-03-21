@@ -181,7 +181,7 @@ class dripPSM(object):
             the sequences of b- and y-ions must be recomputed to tell
             which set each fragment ion belongs to
         """
-        if varMods or ntermVarMods or ctermVarMods:
+        if varMods or varNtermMods or varCtermMods:
             assert varModSequence, "Variable modifications enyme options specified, but string indicating which amino acids were var mods not supplied.  Exitting"
             if highResMs2:
                 bions, yions = return_b_y_ions_var_mods(Peptide(self.peptide), c, 
