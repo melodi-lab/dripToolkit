@@ -181,7 +181,7 @@ class dripPSM(object):
             the sequences of b- and y-ions must be recomputed to tell
             which set each fragment ion belongs to
         """
-        if varMods or ntermVarMods or ctermVarMods:
+        if varMods or varNtermMods or varCtermMods:
             assert varModSequence, "Variable modifications enyme options specified, but string indicating which amino acids were var mods not supplied.  Exitting"
             if highResMs2:
                 bions, yions = return_b_y_ions_var_mods(Peptide(self.peptide), c, 
@@ -248,7 +248,8 @@ class dripPSM(object):
             upper_mz = int(math.ceil(max(s.mz)/xtick_increments + 1)*xtick_increments)
             ticks = range(lower_mz, upper_mz, xtick_increments)
 
-            pylab.figure()
+            # pylab.figure()
+            pylab.clf()
 
             pylab.xlabel('m/z', fontsize=20)
             pylab.spectral()
@@ -331,7 +332,6 @@ class dripPSM(object):
             fig = matplotlib.pyplot.gcf()
             fig.set_size_inches(12.5,6.5)    
             pylab.savefig(plotname, dpi=100)
-
     else:
         def plot_drip_viterbi(self, plotname,
                           xtick_increments = 100):
