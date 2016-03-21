@@ -41,7 +41,7 @@ from pyFiles.dripEncoding import (create_drip_structure,
                                   interleave_b_y_ions,
                                   interleave_b_y_ions_lowres,
                                   interleave_b_y_ions_var_mods,
-                                  interleave_b_y_ions_lowres_var_mods,
+                                  interleave_b_y_ions_var_mods_lowres,
                                   filter_theoretical_peaks,
                                   filter_theoretical_peaks_lowres,
                                   load_drip_means)
@@ -275,7 +275,7 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
 
 def write_lorikeet_file(psm, spec, filename,
                         mods = {}, nterm_mods = 0, cterm_mods = 0,
-                        var_mod_indices = {},
+                        var_mod_tuples = {},
                         title = '',
                         width = '', height = '',
                         ms1scanLabel = ''):
@@ -469,16 +469,16 @@ def gen_lorikeet(psmFile, spectrumFile,
                 if l:
                     if l == 1:
                         assert aa in var_mods, "Var mod string denotes variable mod %c not supported by variable mod enzyme settings" % aa
-                        varModShift = var_mods[aa][1])
-                        varModTuple.append(ind+1, aa, varModShift)
+                        varModShift = var_mods[aa][1]
+                        varModTuple.append((ind+1, aa, varModShift))
                     elif l == 2:
                         assert aa in cterm_var_mods, "Nterm var mod string denotes nterm var mod %c not supported by nterm var mod enzyme settings" % aa
-                        varModShift = cterm_var_mods[aa][1])
-                        varModTuple.append(ind+1, aa, varModShift)
+                        varModShift = cterm_var_mods[aa][1]
+                        varModTuple.append((ind+1, aa, varModShift))
                     elif l == 3:
                         assert aa in nterm_var_mods, "Nterm var mod string denotes nterm var mod %c not supported by nterm var mod enzyme settings" % aa
-                        varModShift = nterm_var_mods[aa][1])
-                        varModTuple.append(ind+1, aa, varModShift)
+                        varModShift = nterm_var_mods[aa][1]
+                        varModTuple.append((ind+1, aa, varModShift))
 
         filename = 'scan' + str(sid) + '-' + psm[1] + '-ch' + str(charge) + '.html'
         filename = os.path.join(outputDirectory,filename)
@@ -637,7 +637,7 @@ def psm(p, s0, c = 2, highResMs2 = False,
         dripMeans = load_drip_means(dripLearnedMeans)
         if varMods or ntermVarMods or ctermVarMods:
             assert varModSequence, "Variable mod enzyme options specified, but empty string denoting which amino acids are var mods supplied.  Exitting"
-            bNy = interleave_b_y_ions_lowres_var_mods(Peptide(p), c, 
+            bNy = interleave_b_y_ions_var_mods_lowres(Peptide(p), c, 
                                                       mods, ntermMods, ctermMods, 
                                                       varMods, varNtermMods, varCtermMods, 
                                                       varModSequence)
