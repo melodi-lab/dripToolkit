@@ -17,6 +17,9 @@ from dripBootParameters import init_strictOrbitrapRiptide_learned_means, writeCP
 from pyFiles.constants import allPeps, mass_h, mass_h2o
 from subprocess import call, check_output
 
+maxFragmentIonCharge = 2
+maxHighResFragmentIonCharge = 5
+
 def gaussPdf(x, mu, sig):
     Z = (2*math.pi*sig)**.5
     return math.exp(-(x-mu)**2/(2*sig)) / Z
@@ -762,7 +765,7 @@ def return_b_y_ions(peptide, charge, mods = {},
     """
     (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic')
     bions = {}
-    yion = {}
+    yions = {}
     ntermOffset = 0
     ctermOffset = 0
 
@@ -774,31 +777,43 @@ def return_b_y_ions(peptide, charge, mods = {},
         ctermOffset = ctermMods[p[0]]
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = cf*mass_h
         offset = ntermOffset
+        numRes = 1
         for b, aa in zip(ntm[1:-1], peptide.seq[:-1]):
             if aa in mods:
                 offset += mods[aa]
             ion = (b+offset+bOffset)/cf
-            bions[ion_to_index_map[ion]] = ion
+            if ion in ion_to_index_map:
+                bions[ion_to_index_map[ion]] = (numRes, c)
+                # bions[ion_to_index_map[ion]] = ion
+            numRes += 1
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = mass_h2o + cf*mass_h
         offset = ctermOffset
+        numRes = 1
         for y, aa in zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:])):
             if aa in mods:
                 offset += mods[aa]
             ion = (y+offset+yOffset)/cf
-            yions[ion_to_index_map[ion]] = ion
+            if ion in ion_to_index_map:
+                yions[ion_to_index_map[ion]] = (numRes, c)
+                # yions[ion_to_index_map[ion]] = ion
+            numRes += 1
 
     return bions, yions
 
 def return_b_y_ions_var_mods(peptide, charge, 
                              mods = {}, ntermMods = {}, ctermMods = {}, 
                              ion_to_index_map = {}, 
-                             varMods = {}, varNtermMods = {}, varCtermMods = {}, 
+                             varMods = {}, ntermVarMods = {}, ctermVarMods = {}, 
                              varModSequence = ''):
     """Create sets of b- and y-ions
 
@@ -817,7 +832,7 @@ def return_b_y_ions_var_mods(peptide, charge,
     """
     (ntm, ctm) = peptide.ideal_fragment_masses('monoisotopic')
     bions = {}
-    yion = {}
+    yions = {}
     ntermOffset = 0
     ctermOffset = 0
 
@@ -835,9 +850,12 @@ def return_b_y_ions_var_mods(peptide, charge,
             ctermOffset = ctermVarMods[p[-1]][1]
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = cf*mass_h
         offset = ntermOffset
+        numRes = 1
         for ind, (b, aa) in enumerate(zip(ntm[1:-1], peptide.seq[:-1])):
             if aa in mods:
                 offset += mods[aa]
@@ -845,12 +863,18 @@ def return_b_y_ions_var_mods(peptide, charge,
                 if varModSequence[ind]=='1':
                     offset += varMods[aa][1]
             ion = (b+offset+bOffset)/cf
-            bions[ion_to_index_map[ion]] = ion
+            if ion in ion_to_index_map:
+                bions[ion_to_index_map[ion]] = (numRes, c)
+                # bions[ion_to_index_map[ion]] = ion
+            numRes += 1
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = mass_h2o + cf*mass_h
         offset = ctermOffset
+        numRes = 1
         for ind, (y, aa) in enumerate(zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:]))):
             if aa in mods:
                 offset += mods[aa]
@@ -858,7 +882,10 @@ def return_b_y_ions_var_mods(peptide, charge,
                 if varModSequence[ind]=='1':
                     offset += varMods[aa][1]
             ion = (y+offset+yOffset)/cf
-            yions[ion_to_index_map[ion]] = ion
+            if ion in ion_to_index_map:
+                yions[ion_to_index_map[ion]] = (numRes, c)
+                # yions[ion_to_index_map[ion]] = ion
+            numRes += 1
 
     p = peptide.seq
     # check n-/c-term amino acids for modifications
@@ -868,25 +895,36 @@ def return_b_y_ions_var_mods(peptide, charge,
         ctermOffset = ctermMods[p[0]]
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = cf*mass_h
         offset = ntermOffset
+        numRes = 1
         for b, aa in zip(ntm[1:-1], peptide.seq[:-1]):
             if aa in mods:
                 offset += mods[aa]
             ion = (b+offset+bOffset)/cf
-            bions[ion_to_index_map[ion]] = ion
+            if ion in ion_to_index_map:
+                bions[ion_to_index_map[ion]] = (numRes, c)
+                # bions[ion_to_index_map[ion]] = ion
+            numRes += 1
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = mass_h2o + cf*mass_h
         offset = ctermOffset
+        numRes = 1
         for y, aa in zip(reversed(ctm[1:-1]), reversed(peptide.seq[1:])):
             if aa in mods:
                 offset += mods[aa]
             ion = (y+offset+yOffset)/cf
-            yions[ion_to_index_map[ion]] = ion
-
+            if ion in ion_to_index_map:
+                yions[ion_to_index_map[ion]] = (numRes, c)
+                # yions[ion_to_index_map[ion]] = ion
+                
     return bions, yions
 
 def return_b_y_ions_lowres(peptide, charge, mods = {},
@@ -919,6 +957,8 @@ def return_b_y_ions_lowres(peptide, charge, mods = {},
         ctermOffset = ctermMods[p[0]]
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = int(round(cf*mass_h))
         offset = ntermOffset
@@ -931,6 +971,8 @@ def return_b_y_ions_lowres(peptide, charge, mods = {},
             numRes += 1
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = int(round(mass_h2o + cf*mass_h))
         offset = ctermOffset
@@ -947,7 +989,7 @@ def return_b_y_ions_lowres(peptide, charge, mods = {},
 def return_b_y_ions_lowres_var_mods(peptide, charge, 
                                     mods = {}, ntermMods = {}, ctermMods = {},
                                     ion_to_index_map = {}, 
-                                    varMods = {}, varNtermMods = {}, varCtermMods = {},
+                                    varMods = {}, ntermVarMods = {}, ctermVarMods = {},
                                     varModSequence = ''):
     """Create vector of interleaved b and y ions
 
@@ -982,6 +1024,8 @@ def return_b_y_ions_lowres_var_mods(peptide, charge,
             ctermOffset = ctermVarMods[p[-1]][1]
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = int(round(cf*mass_h))
         offset = ntermOffset
@@ -997,6 +1041,8 @@ def return_b_y_ions_lowres_var_mods(peptide, charge,
             numRes += 1
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = int(round(mass_h2o + cf*mass_h))
         offset = ctermOffset
@@ -1055,6 +1101,8 @@ def interleave_b_y_ions(peptide, charge,
         ctermOffset = ctermMods[p[0]]
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = cf*mass_h
         offset = ntermOffset
@@ -1064,6 +1112,8 @@ def interleave_b_y_ions(peptide, charge,
             bNy.append((b+offset+bOffset)/cf)
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = mass_h2o + cf*mass_h
         offset = ctermOffset
@@ -1109,6 +1159,8 @@ def interleave_b_y_ions_var_mods(peptide, charge,
             ctermOffset = ctermVarMods[p[-1]][1]
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = cf*mass_h
         offset = ntermOffset
@@ -1121,6 +1173,8 @@ def interleave_b_y_ions_var_mods(peptide, charge,
             bNy.append((b+offset+bOffset)/cf)
 
     for c in range(1,max(charge,2)):
+        if c > maxHighResFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = mass_h2o + cf*mass_h
         offset = ctermOffset
@@ -1162,6 +1216,8 @@ def interleave_b_y_ions_lowres(peptide, charge, mods = {},
         ctermOffset = ctermMods[p[0]]
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = int(round(cf*mass_h))
         offset = ntermOffset
@@ -1171,6 +1227,8 @@ def interleave_b_y_ions_lowres(peptide, charge, mods = {},
             bNy.append(int(round(float(b+int(round(offset))+bOffset)/cf)))
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = int(round(mass_h2o + cf*mass_h))
         offset = ctermOffset
@@ -1217,6 +1275,8 @@ def interleave_b_y_ions_var_mods_lowres(peptide, charge,
             ctermOffset = ctermVarMods[p[-1]][1]
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         bOffset = int(round(cf*mass_h))
         offset = ntermOffset
@@ -1229,6 +1289,8 @@ def interleave_b_y_ions_var_mods_lowres(peptide, charge,
             bNy.append(int(round(float(b+int(round(offset))+bOffset)/cf)))
 
     for c in range(1,max(charge,2)):
+        if c > maxFragmentIonCharge:
+            break
         cf = float(c)
         yOffset = int(round(mass_h2o + cf*mass_h))
         offset = ctermOffset

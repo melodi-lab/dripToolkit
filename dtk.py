@@ -202,7 +202,7 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
     if not highResMs2:
         dripMeans = load_drip_means(dripLearnedMeans)
     else:
-        dripMeans = {}
+        dripMeansSet = set([])
         for sid, c in t:
             for p in t[sid,c]:
                 pep = p.peptide
@@ -216,8 +216,9 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
                     bNy = interleave_b_y_ions(Peptide(pep), c, 
                                               mods, ntermMods, ctermMods)
                 filter_theoretical_peaks(bNy, minMz, maxMz, high_res_gauss_dist)
-                for i, ion in enumerate(bNy):
-                    dripMeans[i] = ion
+                dripMeansSet |= set(bNy)
+                # for i, ion in enumerate(bNy):
+                #     dripMeans[i] = ion
         for sid, c in d:
             for p in d[sid,c]:
                 pep = p.peptide
@@ -231,8 +232,12 @@ def plot_psms(psmFile, spectrumFile, plotList = 'currPsms.html',
                     bNy = interleave_b_y_ions(Peptide(pep), c, 
                                               mods, ntermMods, ctermMods)
                 filter_theoretical_peaks(bNy, minMz, maxMz, high_res_gauss_dist)
-                for i, ion in enumerate(bNy):
-                    dripMeans[i] = ion
+                dripMeansSet |= set(bNy)
+                # for i, ion in enumerate(bNy):
+                #     dripMeans[i] = ion
+        dripMeans = {}
+        for ind, ion in enumerate(sorted(dripMeansSet)):
+            dripMeans[ind] = ion
 
     ion_to_index_map = {} # reverse mapping, from ions to indices
     for ind in dripMeans:
