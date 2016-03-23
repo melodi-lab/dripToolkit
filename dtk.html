@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)http://cruxtoolkit.sourceforge.net/tide-search.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<title>dtk</title>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</script><style type="text/css"></style>
+<script type="text/javascript">
+  MathJax.Hub.Config({jax: ["input/TeX","output/HTML-CSS"], displayAlign: "left"});
+</script>
+<style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Hover_Arrow {position: absolute; width: 15px; height: 11px; cursor: pointer}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 2px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 2px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; color: #666666}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: 1em}
+.MathJax_MenuRadioCheck.RTL {right: 1em; left: auto}
+.MathJax_MenuLabel {padding: 2px 2em 4px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #CCCCCC; margin: 4px 1px 0px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: Highlight; color: HighlightText}
+.MathJax_Menu_Close {position: absolute; width: 31px; height: 31px; top: -15px; left: -15px}
+</style><style type="text/css">.MathJax_Preview .MJXc-math {color: inherit!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><style type="text/css">.MJXc-script {font-size: .8em}
+.MJXc-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXc-bold {font-weight: bold}
+.MJXc-italic {font-style: italic}
+.MJXc-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXc-largeop {font-size: 150%}
+.MJXc-largeop.MJXc-int {vertical-align: -.2em}
+.MJXc-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXc-display {display: block; text-align: center; margin: 1em 0}
+.MJXc-math span {display: inline-block}
+.MJXc-box {display: block!important; text-align: center}
+.MJXc-box:after {content: " "}
+.MJXc-rule {display: block!important; margin-top: .1em}
+.MJXc-char {display: block!important}
+.MJXc-mo {margin: 0 .15em}
+.MJXc-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXc-denom {display: inline-table!important; width: 100%}
+.MJXc-denom > * {display: table-row!important}
+.MJXc-surd {vertical-align: top}
+.MJXc-surd > * {display: block!important}
+.MJXc-script-box > *  {display: table!important; height: 50%}
+.MJXc-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXc-script-box > *:last-child > * {vertical-align: bottom}
+.MJXc-script-box > * > * > * {display: block!important}
+.MJXc-mphantom {visibility: hidden}
+.MJXc-munderover {display: inline-table!important}
+.MJXc-over {display: inline-block!important; text-align: center}
+.MJXc-over > * {display: block!important}
+.MJXc-munderover > * {display: table-row!important}
+.MJXc-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXc-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXc-mtr {display: table-row!important}
+.MJXc-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXc-mtr > .MJXc-mtd:first-child {padding-left: 0}
+.MJXc-mtr:first-child > .MJXc-mtd {padding-top: 0}
+.MJXc-mlabeledtr {display: table-row!important}
+.MJXc-mlabeledtr > .MJXc-mtd:first-child {padding-left: 0}
+.MJXc-mlabeledtr:first-child > .MJXc-mtd {padding-top: 0}
+.MJXc-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXc-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXc-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXc-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXc-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXc-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXc-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXc-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXc-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style></head>
+<body><div id="MathJax_Message" style="display: none;"></div>
+<h1>dtk</h1>
+<h2>Description:</h2>
+<p>Library of analysis tools.  Within the python interactive shell,
+  supports instantation of PSMs, real-time Viterbi decoding of DRIP
+  PSMs, and plotting of a DRIP PSM's decoded Viterbi path.  Given a
+  file of PSMs, supports modules for plotting DRIP PSMs' decoded
+  Viterbi paths and generation
+  of <a href="https://code.google.com/archive/p/lorikeet/">Lorikeet</a>
+  files for interative, in-browser analysis.
+<h2>Modules:</h2>
+<ul>
+  <li>
+    <code>load_spectra()</code> – Load spectra
+    from <code>.ms2</code> file.<br>
+    <b>Input:</b>
+    <ul>
+      <li><code>.ms2</code> file
+    </ul>
+    <b>Output:</b>
+    <ul>
+      <li>Dictionary whose keys are scan numbers and elements are
+      spectrum objects with relevant
+      attributes <code>.spectrum_id</code> (scan ID
+      number), <code>.intensity</code> (list of intensity
+      values), and <code>.mz</code> (list of m/z values)
+    </ul>
+  <li>
+    <code>psm()</code> – instantiate PSM object.<br>
+    <b>Inputs:</b>
+    <ol>
+      <li>Peptide sequence (required)
+      <li>Observed spectrum (accessed via dictionary returned
+        by <code>load_spectra</code>) (required)
+      <li>PSM charge (if unspecified, defaults to <code>2</code>)
+      <li>Boolean denoting whether high-resolution MS2
+        spectrum (if unspecified, defaults to <code>False</code>)
+      <li>Used DRIP learned means, output
+        of <code>dripTrain</code> (if unspecified, defaults to
+        <code>''</code>)
+      <li>Used DRIP learned covars, output
+        of <code>dripTrain</code> (if unspecified, defaults to
+        <code>''</code>)
+      <li>Modifications specification (if unspecified, defaults to
+        <code>'C+57.0214'</code>)
+      <li>N-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>C-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>Boolean denoting whether to filter the precursor MS1
+        peak (if unspecified, defaults to <code>False</code>)
+      <li>If high-resolution MS2 spectrum, m/z value to fit 99.9% of
+        theoretical Gaussian mass within (if unspecified, defaults
+        to <code>0.05</code>)
+    </ol>
+    <b>Output:</b>
+    <ul>
+      <li>decoded DRIP PSM object with relevant
+      attributes <code>.peptide</code> (peptide
+      sequence), <code>.spectrum</code> (PSM observed spectrum
+      object), <code>.insertion_sequence</code> (decoded sequence of
+      Booleans denoting whether the ith peak in the observed spectrum
+      is an insertion or not), <code>.used_ions</code> (decoded
+      sequence of non-deleted theoretical peaks)
+    </ul>
+  </li>
+  </li>
+  <li>
+    <code>plot_drip_viterbi()</code> – for <code>p = psm()</code>,
+    <code>p.plot_drip_viterbi(plotName)</code> plots decoded sequence
+    of DRIP scored b- and y-ions to figure <code>plotName</code>.<br>
+  </li>
+  <li>
+    <code>plot_psms()</code> - given PSM file, decode and plot all
+    DRIP PSMs<br>
+    <b>Inputs:</b>
+    <ol>
+      <li>PSM file in DRIP's output format (required)
+      <li><code>.ms2</code> file of observed spectra (required)
+      <li>HTML file to write list of output figures to (if not
+      specified, defaults to 'currPsms.html')
+      <li>Boolean denoting whether high-resolution MS2
+        spectrum (if unspecified, defaults to <code>False</code>)
+      <li>Used DRIP learned means, output
+        of <code>dripTrain</code> (if unspecified, defaults to
+        <code>''</code>)
+      <li>Used DRIP learned covars, output
+        of <code>dripTrain</code> (if unspecified, defaults to
+        <code>''</code>)
+      <li>Modifications specification (if unspecified, defaults to
+        <code>'C+57.0214'</code>)
+      <li>N-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>C-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>Boolean denoting whether to filter the precursor MS1
+        peak (if unspecified, defaults to <code>False</code>)
+      <li>If high-resolution MS2 spectrum, m/z value to fit 99.9% of
+        theoretical Gaussian mass within (if unspecified, defaults
+        to <code>0.05</code>)
+    </ol>
+    <b>Output:</b>
+    <ul>
+      <li>Figure for each PSM in input file of DRIP decoded Viterbi
+      path, listed in the specified HTML file (3rd input)
+    </ul>
+  </li>
+  <li>
+    <code>gen_lorikeet()</code> - generate Lorikeet files for input
+    PSMs.  <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">Lorikeet
+    package</a> is assumed to unzipped in the run directory<br>
+    <b>Input:</b>
+    <ol>
+      <li>Tab-delimited PSM file with user-specified fields (required)
+      <li><code>.ms2</code> file of observed spectra (required)
+      <li>directory to write output Lorikeet HTML files to (required)
+      <li>HTML file to write list of output Lorikeet files to (if not
+      specified, defaults to 'currPsms.html')
+      <li>Modifications specification (if unspecified, defaults to
+        <code>'C+57.0214'</code>)
+      <li>N-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>C-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>Header field denoting scan ID number (if unspecified,
+      defaults to <code>'scan'</code>)
+      <li>Header field denoting peptide sequence (if unspecified,
+      defaults to <code>'sequence'</code>)
+      <li>Header field denoting PSM charge (if unspecified,
+      defaults to <code>'charge'</code>)
+      <li>Optional header field denoting score (if unspecified,
+      defaults to <code>'score'</code>)
+      <li>Header field denoting variable mod sequence if variable mods
+      were specified during the search, following
+      <a href="txt-format.html">DRIP's output specification</a> (if
+      unspecified, defaults to <code>''</code>)
+    </ol>
+    <b>Output:</b>
+    <ul>
+      <li>Lorikeet file for each PSM in input file, listed in the
+      specified HTML file (4th input)
+    </ul>
+  <li>
+    <code>percolatorPsms_gen_lorikeet()</code> - generate Lorikeet
+    files specifically for Percolator output
+    PSMs (variable mods not supported since this information is not typically
+    output by
+    Percolator).  <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">Lorikeet
+    package</a> is assumed to unzipped in the run directory<br>
+    <b>Input:</b>
+    <ol>
+      <li>Tab-delimited PSM file with user-specified fields (required)
+      <li><code>.ms2</code> file of observed spectra (required)
+      <li>directory to write output Lorikeet HTML files to (required)
+      <li>Boolean denoting whether file was generated by <code>crux
+      percolator</code> (if not specified, defaults
+      to <code>False</code>)
+      <li>HTML file to write list of output Lorikeet files to (if not
+      specified, defaults to 'currPsms.html')
+      <li>Modifications specification (if unspecified, defaults to
+        <code>'C+57.0214'</code>)
+      <li>N-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>C-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+    </ol>
+    <b>Output:</b>
+    <ul>
+      <li>Lorikeet file for each PSM in input file, listed in the
+      specified HTML file (5th input)
+    </ul>
+</ul>
+<h2>Example usage:</h2>
+Step-by-step examples of usage are
+given <a href="documentation.html#interactiveTools">here</a>.  In what
+follows, lines beginning with <code>>>></code> are run within python's
+shell.  To run the following examples, import the library in the
+python shell using
+<div class=code id="nav"><code>
+>>> import dtk<br>
+</code></div>
+
+<h3>DRIP decode and plot PSMs</h3>
+<p>
+<div class=code id="nav"><code>
+>>> psms = 'dripSearch-test-output-beam75.txt'<br>
+>>> spectra = 'data/test.ms2'<br>
+>>> dtk.plot_psms(psms, spectra, 'currPsms.html')<br>
+</code></div>
+</p>
+
+<h3>DRIP decode and plot high-res MS2 PSMs with variable mods</h3>
+<p>
+<div class=code id="nav"><code>
+>>> psms = 'dripSearch-malariaTestVarmods-output.txt'<br>
+>>> ms2="data/malariaTest.ms2"<br>
+>>> mods = '3M+15.9949,C+57.0214,K+229.16293'<br>
+>>> nterm_mods = 'X+229.16293'<br>
+>>> cterm_mods = ''<br>
+>>> dtk.plot_psms(psms, ms2, 'currPsms.html',
+              True, '', '',
+              mods, nterm_mods)
+</code></div>
+<p>
+
+<h3>Generate Lorikeet files for general PSM file with variable mods</h3>
+<p>
+<div class=code id="nav"><code>
+>>> ms2="data/malariaTest.ms2"<br>
+>>> mods = '3M+15.9949,C+57.0214,K+229.16293'<br>
+>>> nterm_mods = 'X+229.16293'<br>
+>>> cterm_mods = ''<br>
+>>> scanField = 'scan'<br>
+>>> chargeField = 'charge'<br>
+>>> peptideField = 'sequence'<br>
+>>> scoreField = 'percolator score'<br>
+>>> psmFile='data/lorikeetData/cruxPercolatorMalariaVarModsTestOutput.txt'<br>
+>>> dtk.gen_lorikeet(psmFile, ms2,'genLorikeetPlasmoCruxPlots','genLorikeetPlasmoCruxPlots.html', mods, nterm_mods, cterm_mods, scanField, peptideField, chargeField, scoreField, 'Var_mod_seq')
+</code></div>
+</p>
+
+<h3>Generate Lorikeet files for stand-alone Percolator output</h3>
+<p>
+<div class=code id="nav"><code>
+>>> ms2="data/test.ms2"<br>
+>>> mods = 'C+57.0214'<br>
+>>> psmFile='data/lorikeetData/percolatorTestOutput.txt'<br>
+>>> dtk.percolatorPsms_gen_lorikeet(psmFile, ms2,'lorikeetPlots',False,'currPsms.html',mods)
+</code></div>
+</p>
+
+
+<hr>
+<a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
+  Toolkit home</a>
+
+
+</body></html>
