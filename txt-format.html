@@ -106,10 +106,26 @@ the corresponding field values.
 <td>Amino acid following this peptide in the parent protein.</td>
 </tr>
 
-<tr bgcolor="#DEDEDE">
+<tr>
+<td>14</td>
 <td>Protein_id</td>
 <td>String consisting of <code>Kind<code> followed by the number the
       protein appears in the target/decoy database</td>
+</tr>
+
+<tr bgcolor="#DEDEDE">
+<td>15</td>
+<td>Var_mod_seq</td>
+<td>String the characters of which
+ denote the type of variable mod applied to each of a PSM's amino
+  acids (only output if variable mods are passed
+ into <code>dripDigest</code>.).  <code>0</code>
+  denotes no variable mod, <code>1</code> denotes a variable mod
+ (specified in <code>mods-spec</code>), <code>2</code> denotes an
+ n-terminal variable mod (specified
+ in <code>nterm-peptide-mods-spec</code>), and <code>3</code> denotes
+ a c-terminal variable mod (specified
+ in <code>cterm-peptide-mods-spec</code>).</td>
 </tr>
 
 </table>
