@@ -220,12 +220,12 @@ def make_drip_data_highres(args, spectra, stdo, stde):
             print "but PSM file does not contain necessary field Var_mod_seq for strings specifying which amino acids are modified."
             print "Exitting"
             exit(-1)
-    else:
-        if varModKey in t.other:
-            print "PSM file does not contains field Var_mod_seq denoting variable modifications,"
-            print "but variable modifications enzyme options not specified."
-            print "Exitting"
-            exit(-1)
+    # else:
+    #     if varModKey in t.other:
+    #         print "PSM file does contains field Var_mod_seq denoting variable modifications,"
+    #         print "but variable modifications enzyme options not specified."
+    #         print "Exitting"
+    #         exit(-1)
 
 
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
@@ -409,12 +409,12 @@ def make_drip_data_lowres(args, spectra, stdo, stde):
             print "but PSM file does not contain necessary field Var_mod_seq for strings specifying which amino acids are modified."
             print "Exitting"
             exit(-1)
-    else:
-        if varModKey in t.other:
-            print "PSM file does not contains field Var_mod_seq denoting variable modifications,"
-            print "but variable modifications enzyme options not specified."
-            print "Exitting"
-            exit(-1)
+    # else:
+    #     if varModKey in t.other:
+    #         print "PSM file does contains field Var_mod_seq denoting variable modifications,"
+    #         print "but variable modifications enzyme options not specified."
+    #         print "Exitting"
+    #         exit(-1)
 
     pfile_dir = os.path.join(args.output_dir, args.obs_dir)
     sid_charges =  list(set(target.iterkeys()) | set(decoy.iterkeys()))

@@ -18,7 +18,7 @@ from pyFiles.constants import allPeps, mass_h, mass_h2o
 from subprocess import call, check_output
 
 maxFragmentIonCharge = 2
-maxHighResFragmentIonCharge = 5
+maxHighResFragmentIonCharge = 2
 
 def gaussPdf(x, mu, sig):
     Z = (2*math.pi*sig)**.5
