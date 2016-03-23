@@ -378,6 +378,49 @@
 </ul>
 </li>
 </ul>
+
+<h2>Example usage:</h2>
+<ul style="list-style-type: none;">
+  <h3>Partial digestion with two missed cleavages, trypsine without
+  proline suppression digesting enzyme</h3>
+  <ul>
+    <p>python -OO dripDigest.py \<br>
+      --min-length 6 \<br>
+      --fasta data/yeast.fasta \<br>
+      --enzyme 'trypsin/p' \<br>
+      --monoisotopic-precursor true \<br>
+      --missed-cleavages 2 \<br>
+      --digestion 'partial-digest'<br>
+    </p>
+  </ul>
+  <h3>Variable modifications, TMT labeling static modifications,
+  cleave at every K</h3>
+  <ul>
+    <p>./dripDigest.py  \<br>
+    	--fasta data/plasmo_Pfalciparum3D7_NCBI.fasta \<br>
+    	--min-length 7 \<br>
+    	--custom-enzyme '[K]|[X]' \<br>
+    	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \<br>
+    	--nterm-peptide-mods-spec 'X+229.16293' \<br>
+    	--monoisotopic-precursor true \<br>
+    	--decoys True
+    </p>
+  </ul>
+  <h3>In ensuing search, take max PSM over charge-varying spectra</h3>
+  <ul>
+    <p>./dripDigest.py  \<br>
+    	--fasta data/plasmo_Pfalciparum3D7_NCBI.fasta \<br>
+    	--min-length 7 \<br>
+    	--custom-enzyme '[K]|[X]' \<br>
+    	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \<br>
+    	--nterm-peptide-mods-spec 'X+229.16293' \<br>
+    	--monoisotopic-precursor true \<br>
+    	--decoys True \<br>
+    	--recalibrate True
+    </p>
+  </ul>
+</ul>
+
 <hr>
 <a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
   Toolkit home</a>

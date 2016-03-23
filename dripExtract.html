@@ -241,10 +241,42 @@
 <!--   search settings. Default = <code>drip.settings</code></li> -->
 <!-- </ul> -->
 <!-- </li> -->
+</ul>
 
+<h2>Example usage:</h2>
+<ul style="list-style-type: none;">
+  <h3>Extract low-resolution MS2 features, output PIN file</h3>
+  <ul>
+    <p>python -OO dripExtract.py \<br>
+      --write-pin true \<br>
+      --learned-means dripLearned.means \<br>
+      --learned-covars dripLearned.covars \<br>
+      --psm-file dripSearch-test-output.txt \<br>
+      --num-threads 8 \<br>
+      --mods-spec 'C+57.0214' \<br>
+      --spectra data/test.ms2 \<br>
+      --output dripExtract-test-output.txt
+    </p>
+  </ul>
+  <h3>Extract high-resolution MS2 features for a search with variable mods, append features to input
+  PIN file</h3>
+  <ul>
+    <p>python -OO dripExtract.py \<br>
+	--append-to-pin true \<br>
+	--high-res-ms2 true \<br>
+	--precursor-filter 'True' \<br>
+	--psm-file crux-malariaTestVarmods-output.pin \<br>
+	--num-threads 8 \<br>
+    	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \<br>
+    	--nterm-peptide-mods-spec 'X+229.16293' \<br>
+	--spectra data/malariaTest.ms2 \<br>
+	--output dripExtract-malariaTestVarmods-output.pin
+    </p>
+  </ul>
 </ul>
 <hr>
-<a href="/">Home</a>
+<a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
+  Toolkit home</a>
 
 
 </body></html>

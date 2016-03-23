@@ -266,11 +266,79 @@
   </li>
 </ul>
 </li>
+</ul>
 
+<h2>Example usage:</h2>
+<ul style="list-style-type: none;">
+  <p>The following examples are available in <code>test.sh</code>.
+    Run <code>dripDigest</code> and <code>dripTrain</code> first, as necessary.</p>
+  <h3>Low-resolution MS1 and MS2 search</h3>
+  <ul>
+    <p>python -OO dripSearch.py  \<br>
+      --digest-dir 'dripDigest-output' \<br>
+      --precursor-window 3.0 \<br>
+      --charges 2 \<br>
+      --spectra data/test.ms2 \<br>
+      --output dripSearch-test-output \<br>
+      --num-threads 8 \<br>
+      --top-match 1 \<br>
+      --learned-means dripLearned.means \<br>
+      --learned-covars dripLearned.covars
+    </p>
+  </ul>
+  <h3>Low-resolution MS1 and MS2 search, faster search with beam pruning</h3>
+  <ul>
+   <p>python -OO dripSearch.py  \<br>
+      --digest-dir 'dripDigest-output' \<br>
+      --precursor-window 3.0 \<br>
+      --charges 2 \<br>
+      --spectra data/test.ms2 \<br>
+      --output dripSearch-test-output \<br>
+      --num-threads 8 \<br>
+      --top-match 1 \<br>
+      --learned-means dripLearned.means \<br>
+      --learned-covars dripLearned.covars \<br>
+     --beam 75
+    </p>
+  </ul>
+  <h3>High-resolution MS1 and MS2 search</h3>
+  <ul>
+    <p>python -OO dripSearch.py \<br>
+	--digest-dir 'dripDigest-output' \<br>
+	--num-threads 8 \<br>
+	--high-res-ms2 true \<br>
+	--precursor-window 50 \<br>
+	--precursor-window-type 'ppm' \<br>
+	--precursor-filter 'True' \<br>
+	--spectra data/malariaTest.ms2 \<br>
+	--output dripSearch-malariaTestVarmods-output<br>
+    </p>
+  </ul>
+  <h3>Split data for cluster usage</h3>
+  <ul>
+    <p>python -OO dripSearch.py \<br>
+    	    --digest-dir 'dripDigest-output' \<br>
+    	    --precursor-window 3.0 \<br>
+    	    --learned-means dripLearned.means \<br>
+    	    --learned-covars dripLearned.covars \<br>
+	    --num-threads 8 \<br>
+	    --num-cluster-jobs 4 \<br>
+    	    --top-match 1 \<br>
+    	    --spectra data/test.ms2 \<br>
+    	    --output dripSearch-clusterTest-output
+      </p>
+  </ul>
+  <h3>Merge outputs of cluster jobs</h3>
+  <ul>
+    <p>python -OO dripSearch.py \<br>
+      --merge-cluster-results True \<br>
+    	    --logDir log \<br>
+    	    --output dripSearch-clusterTest-output
+    </p>
+  </ul>
 </ul>
 <hr>
 <a href="http://melodi.ee.washington.edu/~halloj3/dripToolKit">DRIP
   Toolkit home</a>
-
 
 </body></html>
