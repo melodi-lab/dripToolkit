@@ -222,7 +222,7 @@ function dripExtractHighResVarMods {
 	--precursor-filter 'True' \
     	--learned-means dripLearned.means \
     	--learned-covars dripLearned.covars \
-	--psm-file dripSearch-malariaTest-output.txt \
+	--psm-file dripSearch-malariaTestVarmods-output.txt \
 	--num-threads $NUMTHREADS \
     	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \
     	--nterm-peptide-mods-spec 'X+229.16293' \
@@ -291,8 +291,9 @@ function clusterTest {
 trainTest
 
 # run several tests
-runTests=( dripSearchHighres dripSearchHighresVarMods \
-    dripExtractHighResVarMods )
+runTests=( dripSearchHighres \
+               dripSearchHighresVarMods \
+               dripExtractHighResVarMods )
 
 # loop through array of tests
 for dripTest in ${runTests[@]}
