@@ -100,7 +100,16 @@
 .MJXc-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
 .MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
 .MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
-.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align:
+  left; color: black; padding: 1px 3px; border: 1px solid}
+
+p2 {
+  font-size: 20px; 
+}
+
+#nav {
+    background-color:#eeeeee;
+}
 </style></head>
 <body><div id="MathJax_Message" style="display: none;"></div>
 <h1>dripTrain</h1>
@@ -229,17 +238,19 @@
   described <a href="http://noble.gs.washington.edu/papers/klammer2008modeling.html">here</a>
   with one static modification of Carbamidomethyl, run in the download
   directory:<br>
-  <code>./dripTrain.py --psm-library
-  riptideTrainingData/strict-orbitrap.psm --spectra
-  riptideTrainingData/strict-orbitrap.ms2 
-</code>
+  <div class=code id="nav"><code>
+      ./dripTrain.py --psm-library
+      riptideTrainingData/strict-orbitrap.psm --spectra
+      riptideTrainingData/strict-orbitrap.ms2 
+  </div></code>
 </li>
 <li>To run the above and save the results to  parameter
   file <code>output.params</code>, run in the download directory:<br>
-  <code>./dripTrain.py --dripTrain-file output.params
-  --psm-library riptideTrainingData/strict-orbitrap.psm
-    --spectra riptideTrainingData/strict-orbitrap.ms2 
- </code>
+  <div class=code id="nav"><code>
+      ./dripTrain.py --dripTrain-file output.params
+      --psm-library riptideTrainingData/strict-orbitrap.psm
+      --spectra riptideTrainingData/strict-orbitrap.ms2 
+  </div></code>
 </li>
 </ul>
 <hr>

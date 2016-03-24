@@ -89,23 +89,142 @@
 .MJXc-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
 .MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
 .MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
-.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align:
+  left; color: black; padding: 1px 3px; border: 1px solid}
+
+p2 {
+  font-size: 20px; 
+}
+
+#nav {
+    background-color:#eeeeee;
+}
+
 </style></head>
 <body><div id="MathJax_Message" style="display: none;"></div>
 <h1>dtk</h1>
 <h2>Description:</h2>
-<p>Library of analysis tools.  Within the python interactive shell,
-  supports instantation of PSMs, real-time Viterbi decoding of DRIP
-  PSMs, and plotting of a DRIP PSM's decoded Viterbi path.  Given a
-  file of PSMs, supports modules for plotting DRIP PSMs' decoded
+<p>Python library of PSM analysis tools.  Given PSMs and MS2 spectra,
+  supports modules for plotting DRIP PSMs' decoded
   Viterbi paths and generation
   of <a href="https://code.google.com/archive/p/lorikeet/">Lorikeet</a>
-  files for interative, in-browser analysis.
+  files for interative, in-browser analysis.  Within the python interactive shell,
+  supports instantation of PSMs, real-time Viterbi decoding of DRIP
+  PSMs, and plotting of a DRIP PSM's decoded Viterbi path.
 <h2>Modules:</h2>
 <ul>
   <li>
-    <code>load_spectra()</code> – Load spectra
-    from <code>.ms2</code> file.<br>
+    <p2>
+    <code>plot_psms()</code></p2> - given PSM file, decode and plot all
+    DRIP PSMs
+    <br>
+    <b>Inputs:</b>
+    <ol>
+      <li>PSM file in DRIP's output format (required)
+      <li><code>.ms2</code> file of observed spectra (required)
+      <li>HTML file to write list of output figures to (if not
+      specified, defaults to 'currPsms.html')
+      <li>Boolean denoting whether high-resolution MS2
+        spectrum (if unspecified, defaults to <code>False</code>)
+      <li>Used DRIP learned means, output
+        of <code>dripTrain</code> (if unspecified, defaults to
+        <code>''</code>)
+      <li>Used DRIP learned covars, output
+        of <code>dripTrain</code> (if unspecified, defaults to
+        <code>''</code>)
+      <li>Modifications specification (if unspecified, defaults to
+        <code>'C+57.0214'</code>)
+      <li>N-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>C-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>Boolean denoting whether to filter the precursor MS1
+        peak (if unspecified, defaults to <code>False</code>)
+      <li>If high-resolution MS2 spectrum, m/z value to fit 99.9% of
+        theoretical Gaussian mass within (if unspecified, defaults
+        to <code>0.05</code>)
+    </ol>
+    <b>Output:</b>
+    <ul>
+      <li>Figure for each PSM in input file of DRIP decoded Viterbi
+      path, listed in the specified HTML file (3rd input)
+    </ul>
+  </li>
+  <li>
+    <p2>
+    <code>gen_lorikeet()</code>
+    </p2>
+    - generate Lorikeet files for input
+    PSMs.  <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">Lorikeet
+    package</a> is assumed to unzipped in the run directory<br>
+    <b>Input:</b>
+    <ol>
+      <li>Tab-delimited PSM file with user-specified fields (required)
+      <li><code>.ms2</code> file of observed spectra (required)
+      <li>directory to write output Lorikeet HTML files to (required)
+      <li>HTML file to write list of output Lorikeet files to (if not
+      specified, defaults to 'currPsms.html')
+      <li>Modifications specification (if unspecified, defaults to
+        <code>'C+57.0214'</code>)
+      <li>N-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>C-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>Header field denoting scan ID number (if unspecified,
+      defaults to <code>'scan'</code>)
+      <li>Header field denoting peptide sequence (if unspecified,
+      defaults to <code>'sequence'</code>)
+      <li>Header field denoting PSM charge (if unspecified,
+      defaults to <code>'charge'</code>)
+      <li>Optional header field denoting score (if unspecified,
+      defaults to <code>'score'</code>)
+      <li>Header field denoting variable mod sequence if variable mods
+      were specified during the search, following
+      <a href="txt-format.html">DRIP's output specification</a> (if
+      unspecified, defaults to <code>''</code>)
+    </ol>
+    <b>Output:</b>
+    <ul>
+      <li>Lorikeet file for each PSM in input file, listed in the
+      specified HTML file (4th input)
+    </ul>
+  <li>
+    <p2>
+    <code>percolatorPsms_gen_lorikeet()</code>
+    </p2>
+    - generate Lorikeet
+    files specifically for Percolator output
+    PSMs (variable mods not supported since this information is not typically
+    output by
+    Percolator).  <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">Lorikeet
+    package</a> is assumed to unzipped in the run directory<br>
+    <b>Input:</b>
+    <ol>
+      <li>Tab-delimited PSM file with user-specified fields (required)
+      <li><code>.ms2</code> file of observed spectra (required)
+      <li>directory to write output Lorikeet HTML files to (required)
+      <li>Boolean denoting whether file was generated by <code>crux
+      percolator</code> (if not specified, defaults
+      to <code>False</code>)
+      <li>HTML file to write list of output Lorikeet files to (if not
+      specified, defaults to 'currPsms.html')
+      <li>Modifications specification (if unspecified, defaults to
+        <code>'C+57.0214'</code>)
+      <li>N-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+      <li>C-terminal modifications specification (if unspecified,
+        defaults to <code>''</code>)
+    </ol>
+    <b>Output:</b>
+    <ul>
+      <li>Lorikeet file for each PSM in input file, listed in the
+      specified HTML file (5th input)
+    </ul>
+  <li>
+    <p2>
+      <code>load_spectra()</code></p2> – Load spectra
+    from <code>.ms2</code> file.
+    <br>
     <b>Input:</b>
     <ul>
       <li><code>.ms2</code> file
@@ -119,7 +238,8 @@
       values), and <code>.mz</code> (list of m/z values)
     </ul>
   <li>
-    <code>psm()</code> – instantiate PSM object.<br>
+    <p2>
+    <code>psm()</code></p2> – instantiate PSM object.<br>
     <b>Inputs:</b>
     <ol>
       <li>Peptide sequence (required)
@@ -159,109 +279,11 @@
   </li>
   </li>
   <li>
-    <code>plot_drip_viterbi()</code> – for <code>p = psm()</code>,
+    <p2>
+    <code>plot_drip_viterbi()</code></p2> – for <code>p = psm()</code>,
     <code>p.plot_drip_viterbi(plotName)</code> plots decoded sequence
     of DRIP scored b- and y-ions to figure <code>plotName</code>.<br>
   </li>
-  <li>
-    <code>plot_psms()</code> - given PSM file, decode and plot all
-    DRIP PSMs<br>
-    <b>Inputs:</b>
-    <ol>
-      <li>PSM file in DRIP's output format (required)
-      <li><code>.ms2</code> file of observed spectra (required)
-      <li>HTML file to write list of output figures to (if not
-      specified, defaults to 'currPsms.html')
-      <li>Boolean denoting whether high-resolution MS2
-        spectrum (if unspecified, defaults to <code>False</code>)
-      <li>Used DRIP learned means, output
-        of <code>dripTrain</code> (if unspecified, defaults to
-        <code>''</code>)
-      <li>Used DRIP learned covars, output
-        of <code>dripTrain</code> (if unspecified, defaults to
-        <code>''</code>)
-      <li>Modifications specification (if unspecified, defaults to
-        <code>'C+57.0214'</code>)
-      <li>N-terminal modifications specification (if unspecified,
-        defaults to <code>''</code>)
-      <li>C-terminal modifications specification (if unspecified,
-        defaults to <code>''</code>)
-      <li>Boolean denoting whether to filter the precursor MS1
-        peak (if unspecified, defaults to <code>False</code>)
-      <li>If high-resolution MS2 spectrum, m/z value to fit 99.9% of
-        theoretical Gaussian mass within (if unspecified, defaults
-        to <code>0.05</code>)
-    </ol>
-    <b>Output:</b>
-    <ul>
-      <li>Figure for each PSM in input file of DRIP decoded Viterbi
-      path, listed in the specified HTML file (3rd input)
-    </ul>
-  </li>
-  <li>
-    <code>gen_lorikeet()</code> - generate Lorikeet files for input
-    PSMs.  <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">Lorikeet
-    package</a> is assumed to unzipped in the run directory<br>
-    <b>Input:</b>
-    <ol>
-      <li>Tab-delimited PSM file with user-specified fields (required)
-      <li><code>.ms2</code> file of observed spectra (required)
-      <li>directory to write output Lorikeet HTML files to (required)
-      <li>HTML file to write list of output Lorikeet files to (if not
-      specified, defaults to 'currPsms.html')
-      <li>Modifications specification (if unspecified, defaults to
-        <code>'C+57.0214'</code>)
-      <li>N-terminal modifications specification (if unspecified,
-        defaults to <code>''</code>)
-      <li>C-terminal modifications specification (if unspecified,
-        defaults to <code>''</code>)
-      <li>Header field denoting scan ID number (if unspecified,
-      defaults to <code>'scan'</code>)
-      <li>Header field denoting peptide sequence (if unspecified,
-      defaults to <code>'sequence'</code>)
-      <li>Header field denoting PSM charge (if unspecified,
-      defaults to <code>'charge'</code>)
-      <li>Optional header field denoting score (if unspecified,
-      defaults to <code>'score'</code>)
-      <li>Header field denoting variable mod sequence if variable mods
-      were specified during the search, following
-      <a href="txt-format.html">DRIP's output specification</a> (if
-      unspecified, defaults to <code>''</code>)
-    </ol>
-    <b>Output:</b>
-    <ul>
-      <li>Lorikeet file for each PSM in input file, listed in the
-      specified HTML file (4th input)
-    </ul>
-  <li>
-    <code>percolatorPsms_gen_lorikeet()</code> - generate Lorikeet
-    files specifically for Percolator output
-    PSMs (variable mods not supported since this information is not typically
-    output by
-    Percolator).  <a href="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/lorikeet/lorikeet_0.3.5.zip">Lorikeet
-    package</a> is assumed to unzipped in the run directory<br>
-    <b>Input:</b>
-    <ol>
-      <li>Tab-delimited PSM file with user-specified fields (required)
-      <li><code>.ms2</code> file of observed spectra (required)
-      <li>directory to write output Lorikeet HTML files to (required)
-      <li>Boolean denoting whether file was generated by <code>crux
-      percolator</code> (if not specified, defaults
-      to <code>False</code>)
-      <li>HTML file to write list of output Lorikeet files to (if not
-      specified, defaults to 'currPsms.html')
-      <li>Modifications specification (if unspecified, defaults to
-        <code>'C+57.0214'</code>)
-      <li>N-terminal modifications specification (if unspecified,
-        defaults to <code>''</code>)
-      <li>C-terminal modifications specification (if unspecified,
-        defaults to <code>''</code>)
-    </ol>
-    <b>Output:</b>
-    <ul>
-      <li>Lorikeet file for each PSM in input file, listed in the
-      specified HTML file (5th input)
-    </ul>
 </ul>
 <h2>Example usage:</h2>
 Step-by-step examples of usage are

@@ -90,7 +90,16 @@
 .MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
 .MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
 .MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
-</style></head>
+
+p2 {
+  font-size: 20px; 
+}
+
+#nav {
+    background-color:#eeeeee;
+}
+</style>
+</head>
 <body><div id="MathJax_Message" style="display: none;"></div>
 <h1>dripExtract</h1>
 <h2>Usage:</h2>
@@ -247,30 +256,37 @@
 <ul style="list-style-type: none;">
   <h3>Extract low-resolution MS2 features, output PIN file</h3>
   <ul>
-    <p>python -OO dripExtract.py \<br>
-      --write-pin true \<br>
-      --learned-means dripLearned.means \<br>
-      --learned-covars dripLearned.covars \<br>
-      --psm-file dripSearch-test-output.txt \<br>
-      --num-threads 8 \<br>
-      --mods-spec 'C+57.0214' \<br>
-      --spectra data/test.ms2 \<br>
-      --output dripExtract-test-output.txt
+    <p>
+      <div class=code id="nav"><code>
+          python -OO dripExtract.py \<br>
+          --write-pin true 
+          --learned-means dripLearned.means 
+          --learned-covars dripLearned.covars 
+          --psm-file dripSearch-test-output.txt \<br>
+          --num-threads 8 
+          --mods-spec 'C+57.0214' 
+          --spectra data/test.ms2 \<br>
+          --output dripExtract-test-output.txt
+      </div></code>
     </p>
   </ul>
   <h3>Extract high-resolution MS2 features for a search with variable mods, append features to input
   PIN file</h3>
   <ul>
-    <p>python -OO dripExtract.py \<br>
-	--append-to-pin true \<br>
-	--high-res-ms2 true \<br>
-	--precursor-filter 'True' \<br>
-	--psm-file crux-malariaTestVarmods-output.pin \<br>
-	--num-threads 8 \<br>
-    	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \<br>
-    	--nterm-peptide-mods-spec 'X+229.16293' \<br>
-	--spectra data/malariaTest.ms2 \<br>
-	--output dripExtract-malariaTestVarmods-output.pin
+    <p>
+      <div class=code id="nav"><code>
+          python -OO dripExtract.py \<br>
+	  --append-to-pin true 
+	  --high-res-ms2 true 
+	  --precursor-filter 'True' 
+	  --psm-file crux-malariaTestVarmods-output.pin \<br>
+	  --num-threads 8 
+	  --spectra data/malariaTest.ms2
+	  --output dripExtract-malariaTestVarmods-output.pin \<br>
+    	  --mods-spec '3M+15.9949,C+57.0214,K+229.16293' 
+    	  --nterm-peptide-mods-spec 'X+229.16293' 
+
+      </div></code>
     </p>
   </ul>
 </ul>

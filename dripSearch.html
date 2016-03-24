@@ -100,8 +100,18 @@
 .MJXc-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
 .MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
 .MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
-.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
-</style></head>
+.MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align:
+  left; color: black; padding: 1px 3px; border: 1px solid}
+
+p2 {
+  font-size: 20px; 
+}
+
+#nav {
+    background-color:#eeeeee;
+}
+</style>
+</head>
 <body><div id="MathJax_Message" style="display: none;"></div>
 <h1>dripSearch</h1>
 <h2>Usage:</h2>
@@ -274,66 +284,106 @@
     Run <code>dripDigest</code> and <code>dripTrain</code> first, as necessary.</p>
   <h3>Low-resolution MS1 and MS2 search</h3>
   <ul>
-    <p>python -OO dripSearch.py  \<br>
-      --digest-dir 'dripDigest-output' \<br>
-      --precursor-window 3.0 \<br>
-      --charges 2 \<br>
-      --spectra data/test.ms2 \<br>
-      --output dripSearch-test-output \<br>
-      --num-threads 8 \<br>
-      --top-match 1 \<br>
-      --learned-means dripLearned.means \<br>
-      --learned-covars dripLearned.covars
+    <p>
+      <div class=code id="nav"><code>
+          python -OO dripSearch.py \<br>
+          --digest-dir 'dripDigest-output' 
+          --precursor-window 3.0 
+          --charges 2 
+          --spectra data/test.ms2 \<br>
+          --output dripSearch-test-output 
+          --num-threads 8 
+          --top-match 1 
+          --learned-means dripLearned.means 
+          --learned-covars dripLearned.covars
+      </code></div>
     </p>
+    <!-- <p>python -OO dripSearch.py  \<br> -->
+    <!--   --digest-dir 'dripDigest-output' \<br> -->
+    <!--   --precursor-window 3.0 \<br> -->
+    <!--   --charges 2 \<br> -->
+    <!--   --spectra data/test.ms2 \<br> -->
+    <!--   --output dripSearch-test-output \<br> -->
+    <!--   --num-threads 8 \<br> -->
+    <!--   --top-match 1 \<br> -->
+    <!--   --learned-means dripLearned.means \<br> -->
+    <!--   --learned-covars dripLearned.covars -->
+    <!-- </p> -->
   </ul>
   <h3>Low-resolution MS1 and MS2 search, faster search with beam pruning</h3>
   <ul>
-   <p>python -OO dripSearch.py  \<br>
-      --digest-dir 'dripDigest-output' \<br>
-      --precursor-window 3.0 \<br>
-      --charges 2 \<br>
-      --spectra data/test.ms2 \<br>
-      --output dripSearch-test-output \<br>
-      --num-threads 8 \<br>
-      --top-match 1 \<br>
-      --learned-means dripLearned.means \<br>
-      --learned-covars dripLearned.covars \<br>
-     --beam 75
+    <p>
+      <div class=code id="nav"><code>
+          ./dripSearch.py \<br>
+          --digest-dir 'dripDigest-output' 
+          --precursor-window 3.0 
+          --charges 2 
+          --spectra data/test.ms2 \<br>
+          --output dripSearch-test-output 
+          --num-threads 8 
+          --top-match 1 
+          --learned-means dripLearned.means 
+          --learned-covars dripLearned.covars \<br>
+          --beam 75
+      </code></div>
     </p>
+    <!-- <p> -->
+    <!--   <div class=code id="nav"><code> -->
+    <!--  python -OO dripSearch.py  \<br> -->
+    <!--   --digest-dir 'dripDigest-output' \<br> -->
+    <!--   --precursor-window 3.0 \<br> -->
+    <!--   --charges 2 \<br> -->
+    <!--   --spectra data/test.ms2 \<br> -->
+    <!--   --output dripSearch-test-output \<br> -->
+    <!--   --num-threads 8 \<br> -->
+    <!--   --top-match 1 \<br> -->
+    <!--   --learned-means dripLearned.means \<br> -->
+    <!--   --learned-covars dripLearned.covars \<br> -->
+    <!--  --beam 75 -->
+    <!--   </code></div> -->
+    <!-- </p> -->
   </ul>
   <h3>High-resolution MS1 and MS2 search</h3>
   <ul>
-    <p>python -OO dripSearch.py \<br>
-	--digest-dir 'dripDigest-output' \<br>
-	--num-threads 8 \<br>
-	--high-res-ms2 true \<br>
-	--precursor-window 50 \<br>
-	--precursor-window-type 'ppm' \<br>
-	--precursor-filter 'True' \<br>
-	--spectra data/malariaTest.ms2 \<br>
-	--output dripSearch-malariaTestVarmods-output<br>
+    <p>      
+      <div class=code id="nav"><code>
+          python -OO dripSearch.py \<br>
+	  --digest-dir 'dripDigest-output' 
+	  --num-threads 8 \<br>
+	  --high-res-ms2 true 
+	  --precursor-window 50 
+	  --precursor-window-type 'ppm' 
+	  --precursor-filter 'True' \<br>
+	  --spectra data/malariaTest.ms2 
+	  --output dripSearch-malariaTestVarmods-output
+      </code></div>
     </p>
   </ul>
   <h3>Split data for cluster usage</h3>
   <ul>
-    <p>python -OO dripSearch.py \<br>
-    	    --digest-dir 'dripDigest-output' \<br>
+    <p>
+      <div class=code id="nav"><code>
+          python -OO dripSearch.py \<br>
+    	    --digest-dir 'dripDigest-output' 
     	    --precursor-window 3.0 \<br>
-    	    --learned-means dripLearned.means \<br>
+    	    --learned-means dripLearned.means 
     	    --learned-covars dripLearned.covars \<br>
-	    --num-threads 8 \<br>
-	    --num-cluster-jobs 4 \<br>
-    	    --top-match 1 \<br>
+    	    --top-match 1 
     	    --spectra data/test.ms2 \<br>
+	    --num-cluster-jobs 4 
     	    --output dripSearch-clusterTest-output
+      </div></code>
       </p>
   </ul>
   <h3>Merge outputs of cluster jobs</h3>
   <ul>
-    <p>python -OO dripSearch.py \<br>
-      --merge-cluster-results True \<br>
-    	    --logDir log \<br>
-    	    --output dripSearch-clusterTest-output
+    <p>
+      <div class=code id="nav"><code>
+          python -OO dripSearch.py \<br>
+          --merge-cluster-results True \<br>
+    	  --logDir log \<br>
+    	  --output dripSearch-clusterTest-output
+      </div></code>
     </p>
   </ul>
 </ul>

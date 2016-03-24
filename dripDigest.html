@@ -101,7 +101,16 @@
 .MJXc-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
 .MJXc-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
 .MathJax_CHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
-</style></head>
+
+p2 {
+  font-size: 20px; 
+}
+
+#nav {
+    background-color:#eeeeee;
+}
+</style>
+</head>
 <body><div id="MathJax_Message" style="display: none;"></div>
 <h1>dripDigest</h1>
 <h2>Usage:</h2>
@@ -384,39 +393,48 @@
   <h3>Partial digestion with two missed cleavages, trypsine without
   proline suppression digesting enzyme</h3>
   <ul>
-    <p>python -OO dripDigest.py \<br>
-      --min-length 6 \<br>
-      --fasta data/yeast.fasta \<br>
-      --enzyme 'trypsin/p' \<br>
-      --monoisotopic-precursor true \<br>
-      --missed-cleavages 2 \<br>
-      --digestion 'partial-digest'<br>
+    <p>
+      <div class=code id="nav"><code>
+          python -OO dripDigest.py \<br>
+          --min-length 6 
+          --fasta data/yeast.fasta 
+          --enzyme 'trypsin/p' \<br>
+          --monoisotopic-precursor true 
+          --missed-cleavages 2 
+          --digestion 'partial-digest'
+      </div></code>
     </p>
   </ul>
   <h3>Variable modifications, TMT labeling static modifications,
   cleave at every K</h3>
   <ul>
-    <p>./dripDigest.py  \<br>
-    	--fasta data/plasmo_Pfalciparum3D7_NCBI.fasta \<br>
-    	--min-length 7 \<br>
-    	--custom-enzyme '[K]|[X]' \<br>
-    	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \<br>
-    	--nterm-peptide-mods-spec 'X+229.16293' \<br>
-    	--monoisotopic-precursor true \<br>
-    	--decoys True
+    <p>
+      <div class=code id="nav"><code>
+          ./dripDigest.py  \<br>
+    	  --fasta data/plasmo_Pfalciparum3D7_NCBI.fasta 
+    	  --min-length 7 
+    	  --custom-enzyme '[K]|[X]' \<br>
+    	  --mods-spec '3M+15.9949,C+57.0214,K+229.16293' 
+    	  --nterm-peptide-mods-spec 'X+229.16293' \<br>
+    	  --monoisotopic-precursor true 
+    	  --decoys True
+      </div></code>
     </p>
   </ul>
   <h3>In ensuing search, take max PSM over charge-varying spectra</h3>
   <ul>
-    <p>./dripDigest.py  \<br>
-    	--fasta data/plasmo_Pfalciparum3D7_NCBI.fasta \<br>
-    	--min-length 7 \<br>
-    	--custom-enzyme '[K]|[X]' \<br>
-    	--mods-spec '3M+15.9949,C+57.0214,K+229.16293' \<br>
-    	--nterm-peptide-mods-spec 'X+229.16293' \<br>
-    	--monoisotopic-precursor true \<br>
-    	--decoys True \<br>
-    	--recalibrate True
+    <p>
+      <div class=code id="nav"><code>
+          ./dripDigest.py  \<br>
+    	  --fasta data/plasmo_Pfalciparum3D7_NCBI.fasta 
+    	  --min-length 7 
+    	  --custom-enzyme '[K]|[X]' \<br>
+    	  --mods-spec '3M+15.9949,C+57.0214,K+229.16293' 
+    	  --nterm-peptide-mods-spec 'X+229.16293' \<br>
+    	  --monoisotopic-precursor true 
+    	  --decoys True \<br>
+    	  --recalibrate True
+      </div></code>
     </p>
   </ul>
 </ul>
