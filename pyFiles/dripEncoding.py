@@ -13,7 +13,7 @@ import shlex
 
 from shutil import rmtree
 from pfile.wrapper import PFile
-from dripBootParameters import init_strictOrbitrapRiptide_learned_means, writeCPTs
+from dripBootParameters import init_strictOrbitrapRiptide_learned_means, writeCPTs, writeHighResCPTs
 from pyFiles.constants import allPeps, mass_h, mass_h2o
 from subprocess import call, check_output
 
@@ -337,7 +337,10 @@ def create_drip_structure(highRes = False, strFile = "model.str",
                           maxTermMass = "200002", forcedAlignment = False, 
                           training = False,
                           highResMzWidth = 0.05):
-    writeCPTs()
+    if highRes:
+        writeHighResCPTs()
+    else:
+        writeCPTs()
     create_drip_constants()
     if not training:
         ciPenalty = "-2.525473431771295"
