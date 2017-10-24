@@ -15,192 +15,195 @@
 <link href="./drip.css" rel="styleSheet" type="text/css">
 </head>
 <body>
-<blockquote>
+  <h2>The DRIP Toolkit (DTK) has moved</h2>
+  <p3>The latest DTK updates are available
+    at <a href="https://jthalloran.bitbucket.io/dripToolkit">jthalloran.bitbucket.io/dripToolkit</a>.
+  </p3>
+<!-- <blockquote> -->
 
-<center>
-<!-- <img  src="dripSearchFlowchart.png" usemap="#commands-files" -->
-<!--   width="60%"> -->
-<img  src="dripSoftwareFlowchart.png" usemap="#commands-files" width="80%">
-<!-- <map name="commands-files"> -->
-<!--   <area shape="rect" coords="253,135,349,169" alt="dripDigest" href="dripDigest.html"/> -->
-<!--   <area shape="rect" coords="260,247,342,278" alt="dripTrain" -->
-<!--   href="dripTrain.html"/> -->
-<!--   <area shape="rect" coords="260,247,342,278" alt="dripSearch" href="dripSearch.html"/> -->
-<!-- </map> -->
-</center>
+<!-- <center> -->
+<!-- <\!-- <img  src="dripSearchFlowchart.png" usemap="#commands-files" -\-> -->
+<!-- <\!--   width="60%"> -\-> -->
+<!-- <img  src="dripSoftwareFlowchart.png" usemap="#commands-files" width="80%"> -->
+<!-- <\!-- <map name="commands-files"> -\-> -->
+<!-- <\!--   <area shape="rect" coords="253,135,349,169" alt="dripDigest" href="dripDigest.html"/> -\-> -->
+<!-- <\!--   <area shape="rect" coords="260,247,342,278" alt="dripTrain" -\-> -->
+<!-- <\!--   href="dripTrain.html"/> -\-> -->
+<!-- <\!--   <area shape="rect" coords="260,247,342,278" alt="dripSearch" href="dripSearch.html"/> -\-> -->
+<!-- <\!-- </map> -\-> -->
+<!-- </center> -->
 
-<p>
-  The DRIP Toolkit utilizes a dynamic Bayesian network (DBN) for
-  Rapid Identification of Peptides (DRIP) in tandem
-  mass spectra.  Given an observed spectrum, DRIP scores a peptide by aligning the peptide's theoretical spectrum and the observed spectrum, i.e., computing the most probable sequence of insertions (spurious 
-observed peaks) and deletions (missing theoretical peaks).  DBN inference is efficiently performed utilizing the
-  <a href="https://melodi.ee.washington.edu/gmtk/">Graphical Models
-  Toolkit (GMTK)</a>, which allows easy alteration of the model.  If
-  you use the DRIP toolkit in your research, please
-  cite:</p><blockquote>John T. Halloran, Jeff
-  A. Bilmes, and William S.
-  Noble. <a href="http://auai.org/uai2014/proceedings/individuals/260.pdf">"Learning
-  Peptide-Spectrum Alignment Models for Tandem Mass
-  Spectrometry"</a>. <em>Thirtieth Conference on Uncertainty in
-  Artificial Intelligence (UAI 2014)</em>. AUAI, Quebic City, Quebec
-  Canada, July 2014.</blockquote>
+<!-- <p> -->
+<!--   The DRIP Toolkit utilizes a dynamic Bayesian network (DBN) for -->
+<!--   Rapid Identification of Peptides (DRIP) in tandem -->
+<!--   mass spectra.  Given an observed spectrum, DRIP scores a peptide by aligning the peptide's theoretical spectrum and the observed spectrum, i.e., computing the most probable sequence of insertions (spurious  -->
+<!-- observed peaks) and deletions (missing theoretical peaks).  DBN inference is efficiently performed utilizing the -->
+<!--   <a href="https://melodi.ee.washington.edu/gmtk/">Graphical Models -->
+<!--   Toolkit (GMTK)</a>, which allows easy alteration of the model.  If -->
+<!--   you use the DRIP toolkit in your research, please -->
+<!--   cite:</p><blockquote>John T. Halloran, Jeff -->
+<!--   A. Bilmes, and William S. -->
+<!--   Noble. <a href="http://auai.org/uai2014/proceedings/individuals/260.pdf">"Learning -->
+<!--   Peptide-Spectrum Alignment Models for Tandem Mass -->
+<!--   Spectrometry"</a>. <em>Thirtieth Conference on Uncertainty in -->
+<!--   Artificial Intelligence (UAI 2014)</em>. AUAI, Quebic City, Quebec -->
+<!--   Canada, July 2014.</blockquote> -->
 
-<p />
-<!-- <a href="https://github.com/melodi-lab/dripToolkit" title="Download -->
-<!--                                                            the DRIP -->
-<!--                                                            Toolkit" -->
-<!--    class="sfdl"> -->
-<a href="https://github.com/melodi-lab/dripToolkit/archive/master.zip"
-   onclick="ga('send','event','ZIPFILE','Download', 'Download DTK ZIP Archive');"
-     class="sfdl"
-     id="dtkZipDownload">
-    <span>
-        <b>Download the DRIP Toolkit</b>
-    </span>
-</a>
-<div style="clear:both;"></div>
-<p/>
+<!-- <p /> -->
+<!-- <\!-- <a href="https://github.com/melodi-lab/dripToolkit" title="Download -\-> -->
+<!-- <\!--                                                            the DRIP -\-> -->
+<!-- <\!--                                                            Toolkit" -\-> -->
+<!-- <\!--    class="sfdl"> -\-> -->
+<!-- <a href="https://github.com/melodi-lab/dripToolkit/archive/master.zip" -->
+<!--    onclick="ga('send','event','ZIPFILE','Download', 'Download DTK ZIP Archive');" -->
+<!--      class="sfdl"> -->
+<!--     <span> -->
+<!--         <b>Download the DRIP Toolkit</b> -->
+<!--     </span> -->
+<!-- </a> -->
+<!-- <div style="clear:both;"></div> -->
+<!-- <p/> -->
 
-<p/>
-View the DRIP Toolkit source <a href="https://github.com/melodi-lab/dripToolkit">here</a>.
-</p>
+<!-- <p/> -->
+<!-- View the DRIP Toolkit source <a href="https://github.com/melodi-lab/dripToolkit">here</a>. -->
+<!-- </p> -->
 
-The toolkit is provided as a set of python modules modules:</p>
+<!-- The toolkit is provided as a set of python modules modules:</p> -->
 
-<table>
+<!-- <table> -->
 
-<tr>
-<td colspan="2"><b>Primary modules</b></td>
-</tr>
-<tr>
-<td>
-<a href="dripDigest.html">dripDigest.py</a></td>
-<td>
-Create an index of all peptides in a fasta file, for use in subsequent
-calls to <code>dripSearch.py</code>.</td>
-</tr>
+<!-- <tr> -->
+<!-- <td colspan="2"><b>Primary modules</b></td> -->
+<!-- </tr> -->
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="dripDigest.html">dripDigest.py</a></td> -->
+<!-- <td> -->
+<!-- Create an index of all peptides in a fasta file, for use in subsequent -->
+<!-- calls to <code>dripSearch.py</code>.</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-<a href="dripTrain.html">dripTrain.py</a></td>
-<td>
-Train DRIP model parameters given a set of high-confidence PSMs.
-Only applicable for low-resolution MS2 spectra.</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="dripTrain.html">dripTrain.py</a></td> -->
+<!-- <td> -->
+<!-- Train DRIP model parameters given a set of high-confidence PSMs. -->
+<!-- Only applicable for low-resolution MS2 spectra.</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-<a href="dripSearch.html">dripSearch.py</a></td>
-<td>
-Search a collection of spectra against a sequence database, provided
-as the output of <code>dripDigest.py</code>, returning a collection of
-peptide-spectrum matches (PSMs).</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="dripSearch.html">dripSearch.py</a></td> -->
+<!-- <td> -->
+<!-- Search a collection of spectra against a sequence database, provided -->
+<!-- as the output of <code>dripDigest.py</code>, returning a collection of -->
+<!-- peptide-spectrum matches (PSMs).</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-<a href="dripExtract.html">dripExtract.py</a></td>
-<td>
-For input collection of PSMs, derive DRIP features for Percolator analysis.</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="dripExtract.html">dripExtract.py</a></td> -->
+<!-- <td> -->
+<!-- For input collection of PSMs, derive DRIP features for Percolator analysis.</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-<a href="dtk.html">dtk.py</a></td>
-<td>
-Library for plotting decoded DRIP PSMs, interactive analysis via
-the <a href="https://code.google.com/archive/p/lorikeet/">Lorikeet</a>
-plugin, and instantation/manipulation/real-time decoding of DRIP PSMs
-in the python interactive shell.
-</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="dtk.html">dtk.py</a></td> -->
+<!-- <td> -->
+<!-- Library for plotting decoded DRIP PSMs, interactive analysis via -->
+<!-- the <a href="https://code.google.com/archive/p/lorikeet/">Lorikeet</a> -->
+<!-- plugin, and instantation/manipulation/real-time decoding of DRIP PSMs -->
+<!-- in the python interactive shell. -->
+<!-- </td> -->
+<!-- </tr> -->
 
-</table>
+<!-- </table> -->
 
-<h2>File formats</h2>
+<!-- <h2>File formats</h2> -->
 
-<table id="fileFormatsTable" border="1">
+<!-- <table id="fileFormatsTable" border="1"> -->
 
-<tr>
-<td>&nbsp;</td>
-<td>dripDigest</td>
-<td>dripTrain</td>
-<td>dripSearch</td>
-</tr>
+<!-- <tr> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>dripDigest</td> -->
+<!-- <td>dripTrain</td> -->
+<!-- <td>dripSearch</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-<a href="ms2-format.html">MS2</a>
-</td>
-<td>&nbsp;</td>
-<td>in</td>
-<td>in</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="ms2-format.html">MS2</a> -->
+<!-- </td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>in</td> -->
+<!-- <td>in</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-Tab-delimited training PSM file
-(<a href="sample.psm">sample</a>)
-</td>
-<td>&nbsp;</td>
-<td>in</td>
-<td>&nbsp;</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- Tab-delimited training PSM file -->
+<!-- (<a href="sample.psm">sample</a>) -->
+<!-- </td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>in</td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-GMTK learned parameters
-</td>
-<td>&nbsp;</td>
-<td>out</td>
-<td>in</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- GMTK learned parameters -->
+<!-- </td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>out</td> -->
+<!-- <td>in</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-<a href="fasta-format.html">FASTA</a>
-(<a href="sample.fasta">sample</a>)
-</td>
-<td>in</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="fasta-format.html">FASTA</a> -->
+<!-- (<a href="sample.fasta">sample</a>) -->
+<!-- </td> -->
+<!-- <td>in</td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- </tr> -->
 
 
-<tr>
-<td>
-database index
-</td>
-<td>out</td>
-<td>&nbsp;</td>
-<td>in</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- database index -->
+<!-- </td> -->
+<!-- <td>out</td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>in</td> -->
+<!-- </tr> -->
 
-<tr>
-<td>
-<a href="txt-format.html">Tab-delimited text</a>
-(<a href="dripSearch-sampleOutput.txt">sample</a>)
-</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>out</td>
-</tr>
+<!-- <tr> -->
+<!-- <td> -->
+<!-- <a href="txt-format.html">Tab-delimited text</a> -->
+<!-- (<a href="dripSearch-sampleOutput.txt">sample</a>) -->
+<!-- </td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>&nbsp;</td> -->
+<!-- <td>out</td> -->
+<!-- </tr> -->
 
-</table>
+<!-- </table> -->
 
-<h2><a href="documentation.html">DRIP Toolkit documentation</a></h2>
-<!-- <li> -->
-<!-- <a href="install.html">Installation</a></li> -->
+<!-- <h2><a href="documentation.html">DRIP Toolkit documentation</a></h2> -->
+<!-- <\!-- <li> -\-> -->
+<!-- <\!-- <a href="install.html">Installation</a></li> -\-> -->
 
-<!-- <li> -->
-<!-- <a href="start-tutorial.html">DRIP toolkit tutorial</a></li> -->
-<!-- </ul> -->
+<!-- <\!-- <li> -\-> -->
+<!-- <\!-- <a href="start-tutorial.html">DRIP toolkit tutorial</a></li> -\-> -->
+<!-- <\!-- </ul> -\-> -->
 
-<hr></hr>
+<!-- <hr></hr> -->
 
-<p>
-Please send comments and questions to halloj3@uw.edu.</p>
+<!-- <p> -->
+<!-- Please send comments and questions to halloj3@uw.edu.</p> -->
 
-</blockquote>
-</body>
+<!-- </blockquote> -->
+<!-- </body> -->
 </html>

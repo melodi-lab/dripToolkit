@@ -32,6 +32,16 @@ p {
 	font-family: Arial; 
 	color: #000000;
 }
+p2 {
+	font-size: 16px; 
+}
+
+p3 {
+	font-size: 17px; 
+	/* font-family: Arial;  */
+	color: #000000;
+}
+
 blockquote {
 	font-size: 14px; 
 	font-family: Arial; 
